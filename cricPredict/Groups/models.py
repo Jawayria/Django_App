@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-from User_profile.models import User
+from django.contrib.auth.models import User
 
 
 class Group(models.Model):
@@ -9,8 +9,4 @@ class Group(models.Model):
 
     name = models.CharField(max_length=50)
     privacy = models.CharField(max_length=10, choices=privacy_choices, default='PR')
-
-
-class UserGroup(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    group_id = models.ForeignKey(Group, on_delete=models.CASCADE)
+    users = models.ManyToManyField(User)
