@@ -7,13 +7,22 @@ from django.shortcuts import render, redirect
 
 # Create your views here.
 def signup(request):
+    form = UserCreationForm()
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('/group/creategroup')
-    else:
-        form = UserCreationForm()
+            username = request.POST['username']
+            password = request.POST['password1']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('/group/creategroup')
+            else:
+                return HttpResponse("Couldn't create user.")
+        else:
+            # form = UserCreationForm()
+            return HttpResponse(form.errors.as_json())
     return render(request, 'signup.html', {'form': form})
 
 

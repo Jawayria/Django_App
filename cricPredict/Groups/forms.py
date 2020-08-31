@@ -7,4 +7,4 @@ class GroupCreationForm(forms.ModelForm):
 
     class Meta:
         model = Group
-        fields = ['name', 'privacy']
+        fields = ['name', 'privacy', 'admin_id']

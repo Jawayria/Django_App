@@ -8,9 +8,12 @@ def create_group(request):
     form = GroupCreationForm()
     if request.method == 'POST':
         form = GroupCreationForm(request.POST)
+        form.fields["admin_id"].initial = request.user.id
         if form.is_valid():
+            form.cleaned_data["admin_id"] = request.user.id
             form.save()
+            return HttpResponse("Group Created")
         else:
-            return HttpResponse("Invalid Data")
+            return HttpResponse(form.errors.as_json())
 
     return render(request, 'create_group.html', {'form': form})
