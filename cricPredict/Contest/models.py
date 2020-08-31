@@ -20,9 +20,9 @@ class Match(models.Model):
 
 
 class Prediction(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    match_id = models.ForeignKey(Match, on_delete=models.CASCADE)
-    group_id = models.ForeignKey(Group, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
     prediction = models.CharField(max_length=50)
     score = models.IntegerField()
     time = models.DateTimeField()

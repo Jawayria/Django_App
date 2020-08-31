@@ -10,5 +10,5 @@ class Group(models.Model):
     name = models.CharField(max_length=50)
     privacy = models.CharField(max_length=10, choices=privacy_choices, default='PR')
     users = models.ManyToManyField(User, blank=True, related_name='group_members')
-    admin_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_admin', null=False)
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_admin', null=False)
 
