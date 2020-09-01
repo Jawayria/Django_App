@@ -1,19 +1,23 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from .forms import GroupCreationForm
+from django.views.generic import CreateView
+from .models import Group
 
 
 # Create your views here.
-def create_group(request):
-    form = GroupCreationForm()
-    if request.method == 'POST':
-        form = GroupCreationForm(request.POST)
-        if form.is_valid():
-            instance = form.save(commit=False)
-            instance.admin_id = request.user
-            instance.save()
-            return HttpResponse("Group Created")
-        else:
-            return HttpResponse(form.errors.as_json())
+class CreateGroup(CreateView):
+    model = Group
+    form_class = GroupCreationForm
+    template_name = 'create_group.html'
 
-    return render(request, 'create_group.html', {'form': form})
+    def form_valid(self, form):
+        form = GroupCreationForm(self.request.POST)
+        instance = form.save(commit=False)
+        instance.admin = self.request.user
+        instance.save()
+        return HttpResponse("Group Created")
+
+    def form_invalid(self, form):
+        return HttpResponse(form.errors.as_json())
+

@@ -1,9 +1,9 @@
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include
-from . import views
+from .views import CreateGroup
 
 
 urlpatterns = [
-    url(r'^creategroup/$', views.create_group, name="Create Group"),
+    url(r'^creategroup/$', CreateGroup.as_view(), name="Create Group"),
     ]
