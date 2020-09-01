@@ -26,7 +26,7 @@ class Signup(CreateView):
             return HttpResponse("Couldn't create user.")
 
     def form_invalid(self, form):
-        return HttpResponse(form.errors.as_json())
+        return render(self.request, 'signup.html', {'form': form})
 
 
 class Login(FormView):
@@ -47,7 +47,7 @@ class Login(FormView):
             return HttpResponse("Invalid Username or Password")
 
     def form_invalid(self, form):
-        return HttpResponse(form.errors.as_json())
+        return render(self.request, 'login.html', {'form': form})
 
 
 class Logout(RedirectView):

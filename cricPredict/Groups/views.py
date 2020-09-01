@@ -1,7 +1,7 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .forms import GroupCreationForm
-from django.views.generic import CreateView
+from django.views.generic import CreateView, ListView
 from .models import Group
 
 
@@ -16,8 +16,16 @@ class CreateGroup(CreateView):
         instance = form.save(commit=False)
         instance.admin = self.request.user
         instance.save()
-        return HttpResponse("Group Created")
+        return redirect('/group/listgroup')
 
     def form_invalid(self, form):
-        return HttpResponse(form.errors.as_json())
+        return render(self.request, 'create_group.html', {'form': form})
 
+
+class ListGroups(ListView):
+    model = Group
+    template_name = 'groups_list.html'
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(privacy='public')

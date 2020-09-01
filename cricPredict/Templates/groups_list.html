@@ -1,10 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block content %}
+
+{% if user.is_authenticated %}
+
+    <div class="container">
+    <div class="row">
+        <br>
+        <br>
+    </div>
+    <div class="row">
+
+    <h2>Groups List</h2>
+    <div class="col-md-6 offset-3">
+
+        <ul class="list-group">
+        {% for group in group_list %}
+            <li class="list-group-item"><b>{{ group.name }}</b> owned by {{ group.admin }}</li>
+            <hr/>
+        {% empty %}
+            <li class="list-group-item">No objects yet.</li>
+        {% endfor %}
+        </ul>
+        <p><a href="../../logout">logout</a></p>
+    </div>
+    </div>
+{% else %}
+   <p><a href="../../">Login Here</a></p>
+{% endif %}
+{% endblock %}
