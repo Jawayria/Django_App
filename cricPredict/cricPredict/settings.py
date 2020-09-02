@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Contest.apps.ContestConfig',
     'User_profile.apps.UserProfileConfig',
-    'Groups.apps.GroupsConfig'
+    'Groups.apps.GroupsConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
