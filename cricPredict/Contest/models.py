@@ -1,6 +1,6 @@
 from django.db import models
 from Groups.models import Group
-from Groups.models import UserGroup
+from django.contrib.auth.models import User
 
 
 # Create your models here.
@@ -8,6 +8,7 @@ class League(models.Model):
     name = models.CharField(max_length=50)
     start_date = models.DateField()
     end_date = models.DateField()
+    groups = models.ManyToManyField(Group)
 
 
 class Match(models.Model):
@@ -18,17 +19,16 @@ class Match(models.Model):
     time = models.DateTimeField()
 
 
-class GroupLeague(models.Model):
-    group_id = models.ForeignKey(Group, on_delete=models.CASCADE)
-    league_id = models.ForeignKey(League, on_delete=models.CASCADE)
-
-
-class UserMatch(models.Model):
-    user_id = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
-    match_id = models.ForeignKey(Match, on_delete=models.CASCADE)
+class Prediction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
     prediction = models.CharField(max_length=50)
     score = models.IntegerField()
     time = models.DateTimeField()
+
+    class Meta:
+        unique_together = ['user_id', 'group_id', 'match_id']
 
 
 class Score(models.Model):
