@@ -6,6 +6,7 @@ djangorestframework==3.11.1
 idna==2.10
 optional-django==0.3.0
 pkg-resources==0.0.0
+psycopg2==2.8.5
 pytz==2020.1
 react==4.3.0
 requests==2.24.0

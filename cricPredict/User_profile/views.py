@@ -1,49 +1,57 @@
 from django.contrib.auth import login, authenticate, logout
-from django.core.checks import messages
-from django.http import HttpResponse
+from django.contrib.auth.models import User
+from django.http import HttpResponse, request
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.shortcuts import render, redirect
+from django.views.generic import CreateView, FormView, RedirectView
 
 
 # Create your views here.
-def signup(request):
-    form = UserCreationForm()
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            username = request.POST['username']
-            password = request.POST['password1']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('/group/creategroup')
-            else:
-                return HttpResponse("Couldn't create user.")
+class Signup(CreateView):
+    model = User
+    form_class = UserCreationForm
+    template_name = 'signup.html'
+    success_url = "/group/creategroup"
+
+    def form_valid(self, form):
+        form = UserCreationForm(self.request.POST)
+        form.save()
+        username = self.request.POST['username']
+        password = self.request.POST['password1']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(self.request, user)
+            return redirect('/group/creategroup')
         else:
-            # form = UserCreationForm()
-            return HttpResponse(form.errors.as_json())
-    return render(request, 'signup.html', {'form': form})
+            return HttpResponse("Couldn't create user.")
+
+    def form_invalid(self, form):
+        return render(self.request, 'signup.html', {'form': form})
 
 
-def login_request(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(request, request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('/group/creategroup')
-            else:
-                return HttpResponse("Invalid username or password.")
+class Login(FormView):
+    model = User
+    form_class = AuthenticationForm
+    template_name = 'login.html'
+    success_url = "/group/creategroup"
+
+    def form_valid(self, form):
+        form = AuthenticationForm(self.request.POST)
+        username = self.request.POST['username']
+        password = self.request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(self.request, user)
+            return redirect('/group/creategroup')
         else:
-            return HttpResponse("Invalid username or password.")
-    form = AuthenticationForm()
-    return render(request, "login.html", {"form": form})
+            return HttpResponse("Invalid Username or Password")
+
+    def form_invalid(self, form):
+        return render(self.request, 'login.html', {'form': form})
 
 
-def logout_request(request):
-    logout(request)
-    return redirect("/")
+class Logout(RedirectView):
+
+    def get(self, request1, *args, **kwargs):
+        logout(request1)
+        return redirect("/")
