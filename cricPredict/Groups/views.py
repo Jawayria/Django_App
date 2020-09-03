@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.permissions import IsAuthenticated
@@ -13,9 +14,10 @@ from rest_framework.generics import GenericAPIView, CreateAPIView, ListCreateAPI
 
 
 # Create your views here.
-class GroupAPIView(ListModelMixin, CreateModelMixin, GenericAPIView):
+class GroupAPIView(GenericAPIView):
     permissions = (IsAuthenticated,)
     serializer_class = GroupSerializer
+    queryset = ''
 
     def post(self, request, *args, **kwargs):
         serializerform = self.get_serializer(data=self.request.data)
@@ -25,6 +27,22 @@ class GroupAPIView(ListModelMixin, CreateModelMixin, GenericAPIView):
             serializerform.save(admin=self.request.user)
             form = serializerform.save()
         return Response(serializerform.data)
+
+    def get(self, request, *args, **kwargs):
+        result = Group.objects.filter(privacy= 'public')
+        serializer = GroupSerializer(result, many=True)
+        return Response(serializer.data)
+
+class GroupDeleteAPIView(GenericAPIView):
+
+    permissions = (IsAuthenticated,)
+    serializer_class = GroupSerializer
+    queryset = ''
+
+    def delete(self, request, pk):
+        group = self.get_object(pk)
+        group.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 """""

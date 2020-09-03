@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView, FormView, RedirectView
 from rest_framework.exceptions import ParseError
-from rest_framework.generics import GenericAPIView,CreateAPIView
+from rest_framework.generics import GenericAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -25,9 +25,7 @@ class Signup(CreateAPIView):
             form = serializerform.save()
         return Response(serializerform.data)
 
-
-
-
+"""""
 class Authentication(GenericAPIView):
     permissions = (IsAuthenticated, )
     serializer_class = UserSerializer
@@ -45,12 +43,32 @@ class Authentication(GenericAPIView):
                 return Response(serializerform.data)
             else:
                 return HttpResponse("Invalid Username or Password")
-    """""
+    
     def get(self, request, *args, **kwargs):
         logout(self.request)
         return redirect('/')
-    """""
+"""""
 
+
+class Login(FormView):
+    model = User
+    form_class = AuthenticationForm
+    template_name = 'login.html'
+    success_url = "/group/creategroup"
+
+    def form_valid(self, form):
+        form = AuthenticationForm(self.request.POST)
+        username = self.request.POST['username']
+        password = self.request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(self.request, user)
+            return redirect('/group/creategroup')
+        else:
+            return HttpResponse("Invalid Username or Password")
+
+    def form_invalid(self, form):
+        return render(self.request, 'login.html', {'form': form})
 
 class Logout(RedirectView):
     def get(self, request1, *args, **kwargs):
