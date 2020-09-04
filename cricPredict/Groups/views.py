@@ -10,11 +10,11 @@ from .serializers import GroupSerializer
 from .forms import GroupCreationForm
 from django.views.generic import CreateView, ListView
 from .models import Group
-from rest_framework.generics import GenericAPIView, CreateAPIView, ListCreateAPIView
+from rest_framework.generics import GenericAPIView, CreateAPIView, ListCreateAPIView, DestroyAPIView, RetrieveAPIView
 
 
 # Create your views here.
-class GroupAPIView(GenericAPIView):
+class GroupAPIView(ListCreateAPIView, DestroyAPIView, RetrieveAPIView):
     permissions = (IsAuthenticated,)
     serializer_class = GroupSerializer
     queryset = ''
@@ -29,21 +29,23 @@ class GroupAPIView(GenericAPIView):
         return Response(serializerform.data)
 
     def get(self, request, *args, **kwargs):
-        result = Group.objects.filter(privacy= 'public')
-        serializer = GroupSerializer(result, many=True)
+        try:
+            id = request.query_params["id"]
+            if id is not None:
+                prediction = Group.objects.get(id=id)
+                serializer = GroupSerializer(prediction)
+
+        except:
+            result = Group.objects.filter(privacy='public')
+            serializer = GroupSerializer(result, many=True)
         return Response(serializer.data)
-
-class GroupDeleteAPIView(GenericAPIView):
-
-    permissions = (IsAuthenticated,)
-    serializer_class = GroupSerializer
-    queryset = ''
-
-    def delete(self, request, pk):
-        group = self.get_object(pk)
-        group.delete()
+"""""
+    def delete(self, request, *args, **kwargs):
+  #      group = self.get_object()
+        self.get_object(request.query_params['id']).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+"""""
 
 """""
 class CreateGroup(CreateView):

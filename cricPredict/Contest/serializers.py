@@ -11,13 +11,25 @@ class LeagueSerializer(serializers.ModelSerializer):
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
-        fields = ('team1', 'team2', 'winner', 'time', 'league_id')
+        fields = ('team1', 'team2', 'time', 'league_id')
+
+
+class ExtendedMatchSerializer(MatchSerializer):
+    class Meta:
+        model = Match
+        fields = MatchSerializer.Meta.fields + ('winner',)
 
 
 class PredictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prediction
-        fields = ('prediction', 'score', 'time', 'user', 'match', 'group')
+        fields = ('prediction', 'time', 'user', 'match', 'group')
+
+
+class ExtendedPredictionSerializer(PredictionSerializer):
+    class Meta:
+        model = Prediction
+        fields = PredictionSerializer.Meta.fields + ('score',)
 
 
 class ScoreSerializer(serializers.ModelSerializer):

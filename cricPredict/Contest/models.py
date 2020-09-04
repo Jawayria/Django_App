@@ -15,7 +15,7 @@ class Match(models.Model):
     league_id = models.ForeignKey(League, on_delete=models.CASCADE)
     team1 = models.CharField(max_length=50)
     team2 = models.CharField(max_length=50)
-    winner = models.CharField(max_length=50)
+    winner = models.CharField(max_length=50, null=True)
     time = models.DateTimeField()
 
 
@@ -24,7 +24,7 @@ class Prediction(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     prediction = models.CharField(max_length=50)
-    score = models.IntegerField()
+    score = models.IntegerField(null=True)
     time = models.DateTimeField()
 
     class Meta:
