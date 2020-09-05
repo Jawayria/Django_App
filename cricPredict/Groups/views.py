@@ -1,44 +1,59 @@
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import ParseError
-from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from django.views.generic import ListView
+from rest_framework.exceptions import ParseError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .serializers import GroupSerializer
-from .forms import GroupCreationForm
-from django.views.generic import CreateView, ListView
 from .models import Group
-from rest_framework.generics import GenericAPIView, CreateAPIView, ListCreateAPIView, DestroyAPIView, RetrieveAPIView
+from .serializers import GroupSerializer
 
 
 # Create your views here.
-class GroupAPIView(ListCreateAPIView, DestroyAPIView, RetrieveAPIView):
+class GroupAPIView(APIView):
     permissions = (IsAuthenticated,)
     serializer_class = GroupSerializer
     queryset = ''
 
-    def post(self, request, *args, **kwargs):
-        serializerform = self.get_serializer(data=self.request.data)
-        if not serializerform.is_valid():
+    def post(self, request):
+        serializer = GroupSerializer(data=self.request.data)
+        if not serializer.is_valid():
             raise ParseError(detail="No valid values")
         else:
-            serializerform.save(admin=self.request.user)
-            form = serializerform.save()
-        return Response(serializerform.data)
-
-    def get(self, request, *args, **kwargs):
-        try:
-            id = request.query_params["id"]
-            if id is not None:
-                prediction = Group.objects.get(id=id)
-                serializer = GroupSerializer(prediction)
-
-        except:
-            result = Group.objects.filter(privacy='public')
-            serializer = GroupSerializer(result, many=True)
+            serializer.save(admin=self.request.user)
         return Response(serializer.data)
+
+    def get(self, request, pk=None):
+        if pk is not None:
+            queryset = Group.objects.get(pk=pk)
+            serializer = GroupSerializer(queryset)
+        else:
+            queryset = Group.objects.filter(privacy='public')
+            serializer = GroupSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        group = get_object_or_404(Group, pk=pk)
+        serializer = GroupSerializer(instance=group, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        Group.objects.filter(id=pk).delete()
+        return Response(status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        group = get_object_or_404(Group, pk=pk)
+        serializer = GroupSerializer(instance=group, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+
 """""
     def delete(self, request, *args, **kwargs):
   #      group = self.get_object()
@@ -72,4 +87,3 @@ class ListGroups(ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.filter(privacy='public')
-
