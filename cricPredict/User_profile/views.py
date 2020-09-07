@@ -13,7 +13,7 @@ from .serializers import UserSerializer
 from rest_framework import generics
 
 
-class Signup(CreateAPIView):
+class UserAPIView(CreateAPIView):
     permissions = (IsAuthenticated, )
     serializer_class = UserSerializer
 
