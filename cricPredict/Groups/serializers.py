@@ -13,7 +13,10 @@ class GroupSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.privacy = validated_data.get('privacy', instance.privacy)
-        for user in validated_data['users']:
-            instance.users.add(user)
+
+        if 'users' in validated_data:
+            for user in validated_data['users']:
+                instance.users.add(user)
+
         instance.save()
         return instance
