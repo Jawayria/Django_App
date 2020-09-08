@@ -19,6 +19,7 @@ class GroupAPIView(APIView):
     def post(self, request):
         serializer = GroupSerializer(data=self.request.data, context={'request': self.request})
         serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
 
     def get(self, request, pk=None):

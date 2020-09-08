@@ -8,6 +8,12 @@ class LeagueSerializer(serializers.ModelSerializer):
         fields = ('name', 'start_date', 'end_date')
 
 
+class ExtendedLeagueSerializer(LeagueSerializer):
+    class Meta:
+        model = League
+        fields = LeagueSerializer.Meta.fields + ('groups',)
+
+
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match

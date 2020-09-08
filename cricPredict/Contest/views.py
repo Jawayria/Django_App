@@ -1,7 +1,10 @@
+import datetime
+
 from django.shortcuts import render
 # Create your views here.
+from rest_framework import status
 from rest_framework.exceptions import ParseError
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -16,24 +19,39 @@ class LeagueAPIView(GenericAPIView):
     queryset = ''
 
     def post(self, request, *args, **kwargs):
-        serializerform = self.get_serializer(data=self.request.data)
-        if not serializerform.is_valid():
-            raise ParseError(detail="No valid values")
-        else:
-            form = serializerform.save()
-        return Response(serializerform.data)
-
-    def get(self, request, *args, **kwargs):
-        try:
-            id = request.query_params["id"]
-            if id is not None:
-                league = League.objects.get(id=id)
-                serializer = LeagueSerializer(league)
-
-        except:
-            result = League.objects.all()
-            serializer = LeagueSerializer(result, many=True)
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(groups = [])
         return Response(serializer.data)
+
+    def get(self, request, pk=None):
+        if pk is not None:
+            queryset = League.objects.get(pk=pk)
+            serializer = LeagueSerializer(queryset)
+        else:
+            queryset = League.objects.filter(start_date__gte=datetime.date.today())
+            queryset = queryset.order_by('start_date')
+            serializer = LeagueSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        group = get_object_or_404(League, pk=pk)
+        serializer = LeagueSerializer(instance=group, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        League.objects.filter(id=pk).delete()
+        return Response(status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        group = get_object_or_404(League, pk=pk)
+        serializer = LeagueSerializer(instance=group, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class MatchAPIView(GenericAPIView):
@@ -42,24 +60,38 @@ class MatchAPIView(GenericAPIView):
     queryset = ''
 
     def post(self, request, *args, **kwargs):
-        serializerform = self.get_serializer(data=self.request.data)
-        if not serializerform.is_valid():
-            raise ParseError(detail="No valid values")
-        else:
-            form = serializerform.save()
-        return Response(serializerform.data)
-
-    def get(self, request, *args, **kwargs):
-        try:
-            id = request.query_params["id"]
-            if id is not None:
-                match = MatchAPIView.get()
-                serializer = ExtendedMatchSerializer(match)
-
-        except:
-            matches = Match.objects.all()
-            serializer = ExtendedMatchSerializer(matches, many=True)
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
+
+    def get(self, request, pk=None):
+        if pk is not None:
+            queryset = Match.objects.get(pk=pk)
+            serializer = ExtendedMatchSerializer(queryset)
+        else:
+            queryset = Match.objects.all()
+            serializer = ExtendedMatchSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        group = get_object_or_404(Match, pk=pk)
+        serializer = ExtendedMatchSerializer(instance=group, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        Match.objects.filter(id=pk).delete()
+        return Response(status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        group = get_object_or_404(Match, pk=pk)
+        serializer = ExtendedMatchSerializer(instance=group, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class PredictionAPIView(GenericAPIView):
