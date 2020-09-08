@@ -17,12 +17,8 @@ class GroupAPIView(APIView):
     queryset = ''
 
     def post(self, request):
-        serializer = GroupSerializer(data=self.request.data)
+        serializer = GroupSerializer(data=self.request.data, context={'request': self.request})
         serializer.is_valid(raise_exception=True)
-        if not serializer.is_valid():
-            raise ParseError(detail="No valid values")
-        else:
-            serializer.save(admin=self.request.user, users=[self.request.user])
         return Response(serializer.data)
 
     def get(self, request, pk=None):
