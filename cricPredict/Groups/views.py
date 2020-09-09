@@ -49,3 +49,14 @@ class GroupAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class UserGroupsAPIView(APIView):
+    permissions = (IsAuthenticated, )
+    serializer_class = GroupSerializer
+    queryset = ''
+
+    def get(self, request, pk):
+        queryset = Group.objects.filter(users__in=[pk])
+        serializer = GroupSerializer(queryset, many=True)
+        return Response(serializer.data)
