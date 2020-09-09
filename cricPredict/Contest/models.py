@@ -19,31 +19,12 @@ class Match(models.Model):
     time = models.DateTimeField()
 
 
-class Score(models.Model):
-    Match_Type_Choices = [
-        ('Regular', 'Regular'),
-        ('Quarter Final', 'Quarter Final'),
-        ('Semi Final', 'Semi Final'),
-        ('Play-off', 'Play-off'),
-        ('Final', 'Final')
-    ]
-    Result_Choices = [
-        ('Win', 'Win'),
-        ('Lose', 'Lose'),
-        ('Draw', 'Draw')
-    ]
-
-    match_type = models.CharField(max_length=50, choices=Match_Type_Choices)
-    result = models.CharField(max_length=20, choices=Result_Choices)
-    score = models.IntegerField()
-
-
 class Prediction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     prediction = models.CharField(max_length=50)
-    score = models.ForeignKey(Score, on_delete=models.CASCADE, null=True, blank=True)
+    score = models.IntegerField(null=True, blank=True)
     time = models.DateTimeField()
 
     class Meta:

@@ -1,6 +1,6 @@
 from django.conf.urls import url
-from .views import LeagueAPIView, MatchAPIView, PredictionAPIView, ScoreAPIView, LeagueMatchesAPIView, \
-    GroupLeaguesAPIView
+from .views import LeagueAPIView, MatchAPIView, PredictionAPIView, LeagueMatchesAPIView, \
+    GroupLeaguesAPIView, MatchPredictionsAPIView, UserPredictionsAPIView
 
 urlpatterns = [
     url(r'^league/$', LeagueAPIView.as_view(), name="League"),
@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^league_matches/(?P<pk>[\d]+)/$', LeagueMatchesAPIView.as_view(), name="League Matches View"),
     url(r'^prediction/$', PredictionAPIView.as_view(), name="Prediction"),
     url(r'^prediction/(?P<pk>[\d]+)/$', PredictionAPIView.as_view(), name="Prediction"),
-    url(r'^score/$', ScoreAPIView.as_view(), name="Score"),
-    url(r'^score/(?P<pk>[\d]+)/$', ScoreAPIView.as_view(), name="Score"),
+    url(r'^match_predictions/(?P<pk>[\d]+)/$', MatchPredictionsAPIView.as_view(), name="Match Predictions View"),
+    url(r'^user_predictions/(?P<user>[\d]+)/(?P<league>[\d]+)/$', UserPredictionsAPIView.as_view(),
+        name="User Predictions View")
     ]

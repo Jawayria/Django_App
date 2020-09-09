@@ -8,8 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from Contest.models import League, Match, Prediction, Score
-from Contest.serializers import LeagueSerializer, MatchSerializer, PredictionSerializer, ScoreSerializer, \
+from Contest.models import League, Match, Prediction
+from Contest.serializers import LeagueSerializer, MatchSerializer, PredictionSerializer, \
     ExtendedMatchSerializer, ExtendedPredictionSerializer, ExtendedLeagueSerializer
 
 
@@ -36,8 +36,8 @@ class LeagueAPIView(APIView):
         return Response(serializer.data)
 
     def put(self, request, pk):
-        group = get_object_or_404(League, pk=pk)
-        serializer = ExtendedLeagueSerializer(instance=group, data=request.data)
+        league = get_object_or_404(League, pk=pk)
+        serializer = ExtendedLeagueSerializer(instance=league, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
@@ -47,8 +47,8 @@ class LeagueAPIView(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def patch(self, request, pk):
-        group = get_object_or_404(League, pk=pk)
-        serializer = ExtendedLeagueSerializer(instance=group, data=request.data, partial=True)
+        league = get_object_or_404(League, pk=pk)
+        serializer = ExtendedLeagueSerializer(instance=league, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
@@ -89,8 +89,8 @@ class MatchAPIView(APIView):
         return Response(serializer.data)
 
     def put(self, request, pk):
-        group = get_object_or_404(Match, pk=pk)
-        serializer = ExtendedMatchSerializer(instance=group, data=request.data)
+        match = get_object_or_404(Match, pk=pk)
+        serializer = ExtendedMatchSerializer(instance=match, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
@@ -100,8 +100,11 @@ class MatchAPIView(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def patch(self, request, pk):
-        group = get_object_or_404(Match, pk=pk)
-        serializer = ExtendedMatchSerializer(instance=group, data=request.data, partial=True)
+        match = get_object_or_404(Match, pk=pk)
+        if 'winner' in request.data:
+            if not (request.data['winner'] == match.team1 or request.data['winner'] == match.team2):
+                request.data['winner'] = 'draw'
+        serializer = ExtendedMatchSerializer(instance=match, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
@@ -119,72 +122,77 @@ class LeagueMatchesAPIView(APIView):
         return Response(serializer.data)
 
 
-class ScoreAPIView(GenericAPIView):
-    permissions = (IsAuthenticated,)
-    serializer_class = ScoreSerializer
-    queryset = ''
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=self.request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-    def get(self, request, pk=None):
-        if pk is not None:
-            queryset = Score.objects.get(pk=pk)
-            serializer = ScoreSerializer(queryset)
-        else:
-            queryset = Score.objects.all()
-            serializer = ScoreSerializer(queryset, many=True)
-
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        group = get_object_or_404(Score, pk=pk)
-        serializer = ScoreSerializer(instance=group, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_200_OK)
-
-    def delete(self, request, pk):
-        Score.objects.filter(id=pk).delete()
-        return Response(status=status.HTTP_200_OK)
-
-    def patch(self, request, pk):
-        group = get_object_or_404(Score, pk=pk)
-        serializer = ScoreSerializer(instance=group, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_200_OK)
-
-
 class PredictionAPIView(GenericAPIView):
     permissions = (IsAuthenticated,)
     serializer_class = PredictionSerializer
     queryset = ''
 
     def post(self, request, *args, **kwargs):
-        serializerform = self.get_serializer(data=self.request.data)
-        if not serializerform.is_valid():
-            raise ParseError(detail="No valid values")
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        match = Match.objects.get(id=request.data['match'])
+        if request.data['prediction'] == match.team1 or request.data['prediction'] == match.team2:
+            form = serializer.save()
         else:
-            match = Match.objects.get(id=request.data['match'])
-            if request.data['prediction'] == match.team1 or request.data['prediction'] == match.team2:
-                form = serializerform.save()
+            raise ParseError(detail="This team is not playing")
+        return Response(serializer.data)
+
+    def get(self, request, pk=None):
+        if pk is not None:
+            queryset = Prediction.objects.get(pk=pk)
+            serializer = ExtendedPredictionSerializer(queryset)
+        else:
+            queryset = Prediction.objects.all()
+            serializer = ExtendedPredictionSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        prediction = get_object_or_404(Prediction, pk=pk)
+        serializer = ExtendedPredictionSerializer(instance=prediction, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        Prediction.objects.filter(id=pk).delete()
+        return Response(status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        prediction = get_object_or_404(Prediction, pk=pk)
+        match = Match.objects.get(id=prediction.match.pk)
+        if match.winner is not None and prediction.score is None:
+            if match.winner == prediction.prediction:
+                request.data['score'] = 3
+            elif match.winner == 'Draw':
+                request.data['score'] = 0
             else:
-                raise ParseError(detail="This team is not playing")
-        return Response(serializerform.data)
+                request.data['score'] = -1
+        serializer = ExtendedPredictionSerializer(instance=prediction, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
 
-    def get(self, request, *args, **kwargs):
-        try:
-            id = request.query_params.get("id")
-            if id is not None:
-                prediction = Prediction.objects.get(id=id)
-                serializer = ExtendedPredictionSerializer(prediction)
 
-        except:
-            result = Prediction.objects.all()
-            serializer = ExtendedPredictionSerializer(result, many=True)
+class MatchPredictionsAPIView(APIView):
+    permissions = (IsAuthenticated,)
+    serializer_class = ExtendedPredictionSerializer
+    queryset = ''
+
+    def get(self, request, pk):
+        queryset = Prediction.objects.filter(match=pk)
+        serializer = ExtendedPredictionSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class UserPredictionsAPIView(APIView):
+    permissions = (IsAuthenticated,)
+    serializer_class = ExtendedPredictionSerializer
+    queryset=''
+
+    def get(self, request, user, league):
+        matches = Match.objects.filter(league=league)
+        queryset = Prediction.objects.filter(user=user, match__in=matches)
+        serializer = ExtendedPredictionSerializer(queryset, many=True)
         return Response(serializer.data)
 

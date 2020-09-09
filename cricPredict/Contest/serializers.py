@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Match, League, Prediction, Score
+from .models import Match, League, Prediction
 
 
 class LeagueSerializer(serializers.ModelSerializer):
@@ -37,8 +37,3 @@ class ExtendedPredictionSerializer(PredictionSerializer):
         model = Prediction
         fields = PredictionSerializer.Meta.fields + ('score',)
 
-
-class ScoreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Score
-        fields = ('match_type', 'result', 'score')
