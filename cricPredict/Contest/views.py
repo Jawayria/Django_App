@@ -80,10 +80,10 @@ class MatchAPIView(APIView):
     def get(self, request, pk=None):
         if pk is not None:
             queryset = Match.objects.get(pk=pk)
-            queryset.order_by('time')
             serializer = ExtendedMatchSerializer(queryset)
         else:
             queryset = Match.objects.all()
+            queryset.order_by('time')
             serializer = ExtendedMatchSerializer(queryset, many=True)
 
         return Response(serializer.data)
@@ -119,6 +119,46 @@ class LeagueMatchesAPIView(APIView):
         return Response(serializer.data)
 
 
+class ScoreAPIView(GenericAPIView):
+    permissions = (IsAuthenticated,)
+    serializer_class = ScoreSerializer
+    queryset = ''
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def get(self, request, pk=None):
+        if pk is not None:
+            queryset = Score.objects.get(pk=pk)
+            serializer = ScoreSerializer(queryset)
+        else:
+            queryset = Score.objects.all()
+            serializer = ScoreSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        group = get_object_or_404(Score, pk=pk)
+        serializer = ScoreSerializer(instance=group, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        Score.objects.filter(id=pk).delete()
+        return Response(status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        group = get_object_or_404(Score, pk=pk)
+        serializer = ScoreSerializer(instance=group, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+
 class PredictionAPIView(GenericAPIView):
     permissions = (IsAuthenticated,)
     serializer_class = PredictionSerializer
@@ -148,28 +188,3 @@ class PredictionAPIView(GenericAPIView):
             serializer = ExtendedPredictionSerializer(result, many=True)
         return Response(serializer.data)
 
-
-class ScoreAPIView(GenericAPIView):
-    permissions = (IsAuthenticated,)
-    serializer_class = ScoreSerializer
-    queryset = ''
-
-    def post(self, request, *args, **kwargs):
-        serializerform = self.get_serializer(data=self.request.data)
-        if not serializerform.is_valid():
-            raise ParseError(detail="No valid values")
-        else:
-            form = serializerform.save()
-        return Response(serializerform.data)
-
-    def get(self, request, *args, **kwargs):
-        try:
-            id = request.query_params["id"]
-            if id is not None:
-                score = Score.objects.get(id=id)
-                serializer = ScoreSerializer(score)
-
-        except:
-            result = Score.objects.all()
-            serializer = ScoreSerializer(result, many=True)
-        return Response(serializer.data)
