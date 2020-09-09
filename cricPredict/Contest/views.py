@@ -1,19 +1,19 @@
 import datetime
 
-from django.shortcuts import render
 # Create your views here.
 from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from Contest.models import League, Match, Prediction, Score
 from Contest.serializers import LeagueSerializer, MatchSerializer, PredictionSerializer, ScoreSerializer, \
-    ExtendedMatchSerializer, ExtendedPredictionSerializer
+    ExtendedMatchSerializer, ExtendedPredictionSerializer, ExtendedLeagueSerializer
 
 
-class LeagueAPIView(GenericAPIView):
+class LeagueAPIView(APIView):
     permissions = (IsAuthenticated,)
     serializer_class = LeagueSerializer
     queryset = ''
@@ -27,17 +27,17 @@ class LeagueAPIView(GenericAPIView):
     def get(self, request, pk=None):
         if pk is not None:
             queryset = League.objects.get(pk=pk)
-            serializer = LeagueSerializer(queryset)
+            serializer = ExtendedLeagueSerializer(queryset)
         else:
             queryset = League.objects.filter(start_date__gte=datetime.date.today())
             queryset = queryset.order_by('start_date')
-            serializer = LeagueSerializer(queryset, many=True)
+            serializer = ExtendedLeagueSerializer(queryset, many=True)
 
         return Response(serializer.data)
 
     def put(self, request, pk):
         group = get_object_or_404(League, pk=pk)
-        serializer = LeagueSerializer(instance=group, data=request.data)
+        serializer = ExtendedLeagueSerializer(instance=group, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
@@ -48,13 +48,25 @@ class LeagueAPIView(GenericAPIView):
 
     def patch(self, request, pk):
         group = get_object_or_404(League, pk=pk)
-        serializer = LeagueSerializer(instance=group, data=request.data, partial=True)
+        serializer = ExtendedLeagueSerializer(instance=group, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
 
 
-class MatchAPIView(GenericAPIView):
+class GroupLeaguesAPIView(APIView):
+    permissions = (IsAuthenticated,)
+    serializer_class = LeagueSerializer
+    queryset = ''
+
+    def get(self, request, pk):
+        queryset = League.objects.filter(groups__in=[pk])
+        queryset.order_by('start_date')
+        serializer = LeagueSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class MatchAPIView(APIView):
     permissions = (IsAuthenticated,)
     serializer_class = MatchSerializer
     queryset = ''
@@ -68,6 +80,7 @@ class MatchAPIView(GenericAPIView):
     def get(self, request, pk=None):
         if pk is not None:
             queryset = Match.objects.get(pk=pk)
+            queryset.order_by('time')
             serializer = ExtendedMatchSerializer(queryset)
         else:
             queryset = Match.objects.all()
@@ -92,6 +105,18 @@ class MatchAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class LeagueMatchesAPIView(APIView):
+    permissions = (IsAuthenticated,)
+    serializer_class = ExtendedMatchSerializer
+    queryset=''
+
+    def get(self, request, pk):
+        queryset = Match.objects.filter(league=pk)
+        queryset.order_by('time')
+        serializer = ExtendedMatchSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class PredictionAPIView(GenericAPIView):

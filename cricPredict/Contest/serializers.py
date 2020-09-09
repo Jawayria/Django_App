@@ -17,7 +17,7 @@ class ExtendedLeagueSerializer(LeagueSerializer):
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
-        fields = ('team1', 'team2', 'time', 'league_id')
+        fields = ('team1', 'team2', 'time', 'league')
 
 
 class ExtendedMatchSerializer(MatchSerializer):

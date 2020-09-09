@@ -12,7 +12,7 @@ class League(models.Model):
 
 
 class Match(models.Model):
-    league_id = models.ForeignKey(League, on_delete=models.CASCADE)
+    league = models.ForeignKey(League, on_delete=models.CASCADE)
     team1 = models.CharField(max_length=50)
     team2 = models.CharField(max_length=50)
     winner = models.CharField(max_length=50, null=True)
