@@ -1,6 +1,7 @@
 import datetime
 
 # Create your views here.
+from django.db.models import Sum
 from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView, get_object_or_404
@@ -10,7 +11,8 @@ from rest_framework.views import APIView
 
 from Contest.models import League, Match, Prediction
 from Contest.serializers import LeagueSerializer, MatchSerializer, PredictionSerializer, \
-    ExtendedMatchSerializer, ExtendedPredictionSerializer, ExtendedLeagueSerializer
+    ExtendedMatchSerializer, ExtendedPredictionSerializer, ExtendedLeagueSerializer, RankingsSerializer
+from Groups.models import Group
 
 
 class LeagueAPIView(APIView):
@@ -19,7 +21,7 @@ class LeagueAPIView(APIView):
     queryset = ''
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=self.request.data)
+        serializer = LeagueSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(groups = [])
         return Response(serializer.data)
@@ -72,7 +74,7 @@ class MatchAPIView(APIView):
     queryset = ''
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=self.request.data)
+        serializer = MatchSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -128,9 +130,12 @@ class PredictionAPIView(GenericAPIView):
     queryset = ''
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=self.request.data)
+        serializer = PredictionSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         match = Match.objects.get(id=request.data['match'])
+        group = Group.objects.get(id=request.data['group'])
+        if not group.users.filter(id=request.data['user']).exists():
+            raise ParseError(detail="User should be the member of group")
         if request.data['prediction'] == match.team1 or request.data['prediction'] == match.team2:
             form = serializer.save()
         else:
@@ -179,8 +184,9 @@ class MatchPredictionsAPIView(APIView):
     serializer_class = ExtendedPredictionSerializer
     queryset = ''
 
-    def get(self, request, pk):
-        queryset = Prediction.objects.filter(match=pk)
+    def get(self, request, match, group):
+        queryset = Prediction.objects.filter(match=match, group=group)
+        queryset.order_by('time')
         serializer = ExtendedPredictionSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -196,3 +202,15 @@ class UserPredictionsAPIView(APIView):
         serializer = ExtendedPredictionSerializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class RankingsAPIView(APIView):
+    permissions = (IsAuthenticated,)
+    serializer_class = RankingsSerializer
+    queryset=''
+
+    def get(self, request, group, league):
+        matches = Match.objects.filter(league=league)
+        queryset = Prediction.objects.filter(group=group, match__in=matches)
+        queryset = queryset.values('user').annotate(Sum('score')).order_by('-score__sum')
+        serializer = RankingsSerializer(queryset, many=True)
+        return Response(serializer.data)

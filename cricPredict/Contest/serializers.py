@@ -37,3 +37,7 @@ class ExtendedPredictionSerializer(PredictionSerializer):
         model = Prediction
         fields = PredictionSerializer.Meta.fields + ('score',)
 
+
+class RankingsSerializer(serializers.Serializer):
+    user = serializers.IntegerField()
+    score__sum = serializers.IntegerField()
