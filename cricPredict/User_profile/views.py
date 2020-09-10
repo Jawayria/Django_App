@@ -1,32 +1,59 @@
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.models import User
 from django.http import HttpResponse, request
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView, FormView, RedirectView
 from rest_framework.exceptions import ParseError
-from rest_framework.generics import GenericAPIView, CreateAPIView
+from rest_framework.generics import GenericAPIView, CreateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from .models import User
 from rest_framework.views import APIView
 
-from rest_framework import generics
+from rest_framework import generics, status
 
 from User_profile.serializers import UserSerializer
 
 
-class UserAPIView(APIView):
+class UserAPIView(GenericAPIView):
     permissions = (IsAuthenticated,)
     serializer_class = UserSerializer
+    queryset = ''
 
     def post(self, request, *args, **kwargs):
-        serializer = UserSerializer(data=self.request.data)
-        if not serializer.is_valid():
-            raise ParseError(detail="No valid values")
-        else:
-            form = serializer.save()
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
         return Response(serializer.data)
+
+    def get(self, request, pk=None):
+        if pk is not None:
+            queryset = User.objects.get(pk=pk)
+            serializer = UserSerializer(queryset)
+        else:
+            queryset = User.objects.all()
+            serializer = UserSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserSerializer(instance=user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        User.objects.filter(id=pk).delete()
+        return Response(status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserSerializer(instance=user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 """""
@@ -58,7 +85,7 @@ class Login(FormView):
     model = User
     form_class = AuthenticationForm
     template_name = 'login.html'
-    success_url = "/group/creategroup"
+    success_url = "/group/"
 
     def form_valid(self, form):
         form = AuthenticationForm(self.request.POST)
@@ -72,6 +99,7 @@ class Login(FormView):
             return HttpResponse("Invalid Username or Password")
 
     def form_invalid(self, form):
+        print(form.errors.as_json())
         return render(self.request, 'login.html', {'form': form})
 
 

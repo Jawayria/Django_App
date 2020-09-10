@@ -8,14 +8,14 @@ class League(models.Model):
     name = models.CharField(max_length=50)
     start_date = models.DateField()
     end_date = models.DateField()
-    groups = models.ManyToManyField(Group)
+    groups = models.ManyToManyField(Group, blank=True)
 
 
 class Match(models.Model):
     league = models.ForeignKey(League, on_delete=models.CASCADE)
     team1 = models.CharField(max_length=50)
     team2 = models.CharField(max_length=50)
-    winner = models.CharField(max_length=50, null=True)
+    winner = models.CharField(max_length=50, null=True, blank=True)
     time = models.DateTimeField()
 
 

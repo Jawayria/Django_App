@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^prediction/(?P<pk>[\d]+)/$', PredictionAPIView.as_view(), name="Prediction"),
     url(r'^match_predictions/(?P<match>[\d]+)/(?P<group>[\d]+)/$', MatchPredictionsAPIView.as_view(),
         name="Match Predictions View"),
-    url(r'^user_predictions/(?P<user>[\d]+)/(?P<league>[\d]+)/$', UserPredictionsAPIView.as_view(),
+    url(r'^user_predictions/(?P<user>[\d]+)/(?P<league>[\d]+)/(?P<group>[\d]+)/$', UserPredictionsAPIView.as_view(),
         name="User Predictions View"),
     url(r'^rankings/(?P<group>[\d]+)/(?P<league>[\d]+)/$', RankingsAPIView.as_view(),
         name="Group League View")

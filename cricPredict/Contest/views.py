@@ -23,7 +23,11 @@ class LeagueAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = LeagueSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(groups = [])
+
+        if request.data['start_date'] < request.data['end_date']:
+            serializer.save(groups=[])
+        else:
+            raise ParseError(detail="Dates are not valid")
         return Response(serializer.data)
 
     def get(self, request, pk=None):
@@ -41,7 +45,10 @@ class LeagueAPIView(APIView):
         league = get_object_or_404(League, pk=pk)
         serializer = ExtendedLeagueSerializer(instance=league, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if request.data['start_date'] < request.data['end_date']:
+            serializer.save()
+        else:
+            raise ParseError(detail="Dates are not valid")
         return Response(status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
@@ -52,7 +59,10 @@ class LeagueAPIView(APIView):
         league = get_object_or_404(League, pk=pk)
         serializer = ExtendedLeagueSerializer(instance=league, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if request.data['start_date'] < request.data['end_date']:
+            serializer.save()
+        else:
+            raise ParseError(detail="Dates are not valid")
         return Response(status=status.HTTP_200_OK)
 
 
@@ -156,7 +166,14 @@ class PredictionAPIView(GenericAPIView):
         prediction = get_object_or_404(Prediction, pk=pk)
         serializer = ExtendedPredictionSerializer(instance=prediction, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        group = Group.objects.get(id=request.data['group'])
+        if not group.users.filter(id=request.data['user']).exists():
+            raise ParseError(detail="User should be the member of group")
+        match = Match.objects.get(id=request.data['match'])
+        if request.data['prediction'] == match.team1 or request.data['prediction'] == match.team2:
+            form = serializer.save()
+        else:
+            raise ParseError(detail="This team is not playing")
         return Response(status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
@@ -169,12 +186,17 @@ class PredictionAPIView(GenericAPIView):
         if match.winner is not None and prediction.score is None:
             if match.winner == prediction.prediction:
                 request.data['score'] = 3
-            elif match.winner == 'Draw':
+            elif match.winner == 'draw':
                 request.data['score'] = 0
             else:
                 request.data['score'] = -1
         serializer = ExtendedPredictionSerializer(instance=prediction, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        if 'prediction' in request.data:
+            if request.data['prediction'] == match.team1 or request.data['prediction'] == match.team2:
+                form = serializer.save()
+            else:
+                raise ParseError(detail="This team is not playing")
         serializer.save()
         return Response(status=status.HTTP_200_OK)
 
@@ -196,9 +218,10 @@ class UserPredictionsAPIView(APIView):
     serializer_class = ExtendedPredictionSerializer
     queryset=''
 
-    def get(self, request, user, league):
+    def get(self, request, user, league, group):
         matches = Match.objects.filter(league=league)
-        queryset = Prediction.objects.filter(user=user, match__in=matches)
+        groups = Group.objects.filter(id=group,users__in=[user])
+        queryset = Prediction.objects.filter(user=user, match__in=matches, group__in=groups)
         serializer = ExtendedPredictionSerializer(queryset, many=True)
         return Response(serializer.data)
 

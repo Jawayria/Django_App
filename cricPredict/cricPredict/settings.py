@@ -40,9 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'cricPredict.Contest',
-    'cricPredict.User_profile',
-    'cricPredict.Groups',
+    'Contest',
+    'User_profile',
+    'Groups',
 ]
 
 MIDDLEWARE = [
@@ -131,3 +131,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 
 AUTH_USER_MODEL = 'User_profile.User'
+
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'User_profile.serializers.UserSerializer',
+}
