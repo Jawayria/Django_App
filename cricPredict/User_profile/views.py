@@ -8,22 +8,26 @@ from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .serializers import UserSerializer
 from rest_framework import generics
 
+from User_profile.serializers import UserSerializer
 
-class UserAPIView(CreateAPIView):
-    permissions = (IsAuthenticated, )
+
+class UserAPIView(APIView):
+    permissions = (IsAuthenticated,)
     serializer_class = UserSerializer
 
     def post(self, request, *args, **kwargs):
-        serializerform = self.get_serializer(data=self.request.data)
-        if not serializerform.is_valid():
+        serializer = UserSerializer(data=self.request.data)
+        if not serializer.is_valid():
             raise ParseError(detail="No valid values")
         else:
-            form = serializerform.save()
-        return Response(serializerform.data)
+            form = serializer.save()
+
+        return Response(serializer.data)
+
 
 """""
 class Authentication(GenericAPIView):
@@ -69,6 +73,7 @@ class Login(FormView):
 
     def form_invalid(self, form):
         return render(self.request, 'login.html', {'form': form})
+
 
 class Logout(RedirectView):
     def get(self, request1, *args, **kwargs):

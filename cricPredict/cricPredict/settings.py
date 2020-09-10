@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+import User_profile
+
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
 
@@ -37,10 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Contest.apps.ContestConfig',
-    'User_profile.apps.UserProfileConfig',
-    'Groups.apps.GroupsConfig',
     'rest_framework',
+    'cricPredict.Contest',
+    'cricPredict.User_profile',
+    'cricPredict.Groups',
 ]
 
 MIDDLEWARE = [
@@ -127,3 +129,5 @@ USE_TZ = True
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+
+AUTH_USER_MODEL = 'User_profile.User'

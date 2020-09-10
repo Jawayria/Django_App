@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Group
-from django.contrib.auth.models import User
+from User_profile.models import User
 from .serializers import GroupSerializer
 
 
