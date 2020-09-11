@@ -12,12 +12,13 @@ from .serializers import GroupSerializer
 
 # Create your views here.
 class GroupAPIView(APIView):
-    permissions = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
     queryset = ''
 
     def post(self, request):
-        serializer = GroupSerializer(data=self.request.data, context={'request': self.request})
+        print(self.request.user)
+        serializer = GroupSerializer(data=self.request.data, context={'user': self.request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -52,7 +53,7 @@ class GroupAPIView(APIView):
 
 
 class UserGroupsAPIView(APIView):
-    permissions = (IsAuthenticated, )
+    permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
     queryset = ''
 

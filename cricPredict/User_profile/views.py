@@ -3,6 +3,7 @@ from django.http import HttpResponse, request
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView, FormView, RedirectView
+from rest_framework.authentication import BasicAuthentication
 from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView, CreateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -16,7 +17,9 @@ from User_profile.serializers import UserSerializer
 
 
 class UserAPIView(GenericAPIView):
-    permissions = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (BasicAuthentication,)
+
     serializer_class = UserSerializer
     queryset = ''
 
@@ -94,7 +97,7 @@ class Login(FormView):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(self.request, user)
-            return redirect('/group/creategroup')
+            return redirect('/group/')
         else:
             return HttpResponse("Invalid Username or Password")
 

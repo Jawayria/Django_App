@@ -135,3 +135,13 @@ AUTH_USER_MODEL = 'User_profile.User'
 REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'User_profile.serializers.UserSerializer',
 }
+
+REST_FRAMEWORK = {
+        'DEFAULT_PERMISSION_CLASSES': [
+            'rest_framework.permissions.IsAuthenticated',
+            'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        ],
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework.authentication.BasicAuthentication',
+        )
+}

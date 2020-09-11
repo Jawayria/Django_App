@@ -9,10 +9,10 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ('name', 'privacy', 'users')
 
     def create(self, validated_data):
-        user = User.objects.filter(username=self.context['request'].user)
+        user = User.objects.filter(username=self.context['user'])
         group = Group.objects.create(name=validated_data['name'], privacy=validated_data['privacy'],
-                                     admin=self.context['request'].user)
-        group.users.add(self.context['request'].user)
+                                     admin=self.context['user'])
+        group.users.add(self.context['user'])
         return group
 
     def update(self, instance, validated_data):
