@@ -3,11 +3,13 @@ from django.http import HttpResponse, request
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView, FormView, RedirectView
-from rest_framework.authentication import BasicAuthentication
+from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView, CreateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from .models import User
 from rest_framework.views import APIView
 
@@ -18,7 +20,7 @@ from User_profile.serializers import UserSerializer
 
 class UserAPIView(GenericAPIView):
     permission_classes = (IsAuthenticated,)
-    authentication_classes = (BasicAuthentication,)
+    authentication_classes = (TokenAuthentication,)
 
     serializer_class = UserSerializer
     queryset = ''
@@ -27,8 +29,12 @@ class UserAPIView(GenericAPIView):
         serializer = self.get_serializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        return Response(serializer.data)
+        refresh = RefreshToken.for_user(serializer)
+        res = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+        return Response(res, status.HTTP_201_CREATED)
 
     def get(self, request, pk=None):
         if pk is not None:
