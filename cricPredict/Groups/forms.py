@@ -1,6 +1,6 @@
 from django import forms
 from Groups.models import Group
-from django.contrib.auth.models import User
+from User_profile.models import User
 
 
 class GroupCreationForm(forms.ModelForm):
