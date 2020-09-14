@@ -5,11 +5,10 @@ from User_profile.models import User
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
-    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'password2', 'coins')
+        fields = ('username', 'password', 'password2', 'coins')
 
     def create(self, validated_data):
         username = validated_data["username"]

@@ -29,7 +29,8 @@ class UserAPIView(GenericAPIView):
         serializer = self.get_serializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        refresh = RefreshToken.for_user(serializer)
+        user = User.objects.get(username=self.request.data['username'])
+        refresh = RefreshToken.for_user(user)
         res = {
             "refresh": str(refresh),
             "access": str(refresh.access_token),

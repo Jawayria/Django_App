@@ -148,8 +148,3 @@ REST_FRAMEWORK = {
         ),
         'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser'],
 }
-"""""
-SIMPLE_JWT = {
-    'USER_ID_FIELD': 'username'
-}
-"""""
