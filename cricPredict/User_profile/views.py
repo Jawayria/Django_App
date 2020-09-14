@@ -6,7 +6,7 @@ from django.views.generic import CreateView, FormView, RedirectView
 from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView, CreateAPIView, get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -19,8 +19,8 @@ from User_profile.serializers import UserSerializer
 
 
 class UserAPIView(GenericAPIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
+    permission_classes = (AllowAny,)
+   # authentication_classes = (TokenAuthentication,)
 
     serializer_class = UserSerializer
     queryset = ''
