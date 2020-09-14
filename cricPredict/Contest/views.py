@@ -8,7 +8,7 @@ from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from Contest.models import League, Match, Prediction
 from Contest.serializers import LeagueSerializer, MatchSerializer, PredictionSerializer, \
     ExtendedMatchSerializer, ExtendedPredictionSerializer, ExtendedLeagueSerializer, RankingsSerializer
@@ -17,6 +17,7 @@ from Groups.models import Group
 
 class LeagueAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     serializer_class = LeagueSerializer
     queryset = ''
 
@@ -68,6 +69,7 @@ class LeagueAPIView(APIView):
 
 class GroupLeaguesAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     serializer_class = LeagueSerializer
     queryset = ''
 
@@ -80,6 +82,7 @@ class GroupLeaguesAPIView(APIView):
 
 class MatchAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     serializer_class = MatchSerializer
     queryset = ''
 
@@ -124,6 +127,7 @@ class MatchAPIView(APIView):
 
 class LeagueMatchesAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     serializer_class = ExtendedMatchSerializer
     queryset=''
 
@@ -136,6 +140,7 @@ class LeagueMatchesAPIView(APIView):
 
 class PredictionAPIView(GenericAPIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     serializer_class = PredictionSerializer
     queryset = ''
 
@@ -203,6 +208,7 @@ class PredictionAPIView(GenericAPIView):
 
 class MatchPredictionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     serializer_class = ExtendedPredictionSerializer
     queryset = ''
 
@@ -215,6 +221,7 @@ class MatchPredictionsAPIView(APIView):
 
 class UserPredictionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     serializer_class = ExtendedPredictionSerializer
     queryset=''
 
@@ -228,6 +235,7 @@ class UserPredictionsAPIView(APIView):
 
 class RankingsAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     serializer_class = RankingsSerializer
     queryset=''
 
