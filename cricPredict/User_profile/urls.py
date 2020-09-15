@@ -1,8 +1,5 @@
 from django.conf.urls import url
-from django.contrib import admin
-from django.urls import path, include
 from .views import UserAPIView, Login, Logout, Signup
-from . import views
 
 urlpatterns = [
     url(r'^user/$', UserAPIView.as_view(), name="User"),

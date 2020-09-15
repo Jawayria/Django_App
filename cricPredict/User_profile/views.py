@@ -1,27 +1,25 @@
-from django.contrib.auth import login, authenticate, logout
+from django.conf import settings
 from django.contrib.auth.hashers import check_password
-from django.http import HttpResponse, request
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.shortcuts import render, redirect
-from django.views.generic import CreateView, FormView, RedirectView
-from rest_framework.authentication import BasicAuthentication, TokenAuthentication
-from rest_framework.exceptions import ParseError
-from rest_framework.generics import GenericAPIView, CreateAPIView, get_object_or_404
+from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from rest_framework import status
+from django.core.cache import cache
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
 
 from .models import User
-from rest_framework.views import APIView
-
-from rest_framework import generics, status
-
 from User_profile.serializers import UserSerializer
+
+
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 
 class Signup(GenericAPIView):
     permission_classes = (AllowAny,)
+    authentication_classes = (JWTAuthentication, )
     serializer_class = UserSerializer
     queryset = ''
 
@@ -40,6 +38,7 @@ class Signup(GenericAPIView):
 
 class Login(APIView):
     permission_classes = (AllowAny,)
+    authentication_classes = (JWTAuthentication, )
     serializer_class = UserSerializer
     queryset = ''
 
@@ -94,7 +93,14 @@ class UserAPIView(GenericAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class Logout(RedirectView):
-    def get(self, request1, *args, **kwargs):
-        logout(request1)
-        return redirect("/")
+class Logout(GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserSerializer
+    queryset = ''
+
+    def get(self, request):
+        token = str(self.request.headers.get('Authorization')).split()[1]
+        cache.set(token, token, CACHE_TTL)
+        print(cache.get(token))
+        return Response(status=status.HTTP_200_OK)
+
