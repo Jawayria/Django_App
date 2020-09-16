@@ -20,9 +20,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('User_profile.urls')),
-    path('group/', include('Groups.urls')),
-    path('contest/', include('Contest.urls')),
+    path('api/user/', include('User_profile.urls')),
+    path('api/group/', include('Groups.urls')),
+    path('api/contest/', include('Contest.urls')),
     path('', include('django.contrib.auth.urls')),
     path('auth/', include('rest_framework.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
