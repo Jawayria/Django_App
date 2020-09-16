@@ -17,8 +17,8 @@ class GroupAPIView(APIView):
     queryset = ''
 
     def post(self, request):
-        print(self.request.user)
-        serializer = GroupSerializer(data=self.request.data, context={'user': self.request.user})
+        print(request.user)
+        serializer = GroupSerializer(data=self.request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

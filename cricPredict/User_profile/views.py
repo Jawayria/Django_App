@@ -101,6 +101,6 @@ class Logout(GenericAPIView):
     def get(self, request):
         token = str(self.request.headers.get('Authorization')).split()[1]
         cache.set(token, token, CACHE_TTL)
-        print(cache.get(token))
+        #print(cache.get(token))
         return Response(status=status.HTTP_200_OK)
 
