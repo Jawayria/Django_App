@@ -19,7 +19,6 @@ CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 class Signup(GenericAPIView):
     permission_classes = (AllowAny,)
-    authentication_classes = (JWTAuthentication, )
     serializer_class = UserSerializer
     queryset = ''
 
@@ -38,7 +37,6 @@ class Signup(GenericAPIView):
 
 class Login(APIView):
     permission_classes = (AllowAny,)
-    authentication_classes = (JWTAuthentication, )
     serializer_class = UserSerializer
     queryset = ''
 
@@ -60,7 +58,6 @@ class Login(APIView):
 
 class UserAPIView(GenericAPIView):
     permission_classes = (IsAuthenticated,)
-    authentication_classes = (JWTAuthentication,)
     serializer_class = UserSerializer
     queryset = ''
 

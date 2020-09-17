@@ -17,7 +17,6 @@ from Groups.models import Group
 
 class LeagueAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
     serializer_class = LeagueSerializer
     queryset = ''
 
@@ -69,7 +68,6 @@ class LeagueAPIView(APIView):
 
 class GroupLeaguesAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
     serializer_class = LeagueSerializer
     queryset = ''
 
@@ -82,7 +80,6 @@ class GroupLeaguesAPIView(APIView):
 
 class MatchAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
     serializer_class = MatchSerializer
     queryset = ''
 
@@ -127,7 +124,6 @@ class MatchAPIView(APIView):
 
 class LeagueMatchesAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
     serializer_class = ExtendedMatchSerializer
     queryset=''
 
@@ -140,7 +136,6 @@ class LeagueMatchesAPIView(APIView):
 
 class PredictionAPIView(GenericAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
     serializer_class = PredictionSerializer
     queryset = ''
 
@@ -208,7 +203,6 @@ class PredictionAPIView(GenericAPIView):
 
 class MatchPredictionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
     serializer_class = ExtendedPredictionSerializer
     queryset = ''
 
@@ -221,7 +215,6 @@ class MatchPredictionsAPIView(APIView):
 
 class UserPredictionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
     serializer_class = ExtendedPredictionSerializer
     queryset=''
 
@@ -235,7 +228,6 @@ class UserPredictionsAPIView(APIView):
 
 class RankingsAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
     serializer_class = RankingsSerializer
     queryset=''
 
