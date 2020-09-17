@@ -1,16 +1,11 @@
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.utils.deprecation import MiddlewareMixin
 
 
-class TokenValidationMiddleware(object):
+class TokenValidationMiddleware(MiddlewareMixin):
 
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        return self.get_response(request)
-
-    def process_view(self, request, view_func, view_args, view_kwargs):
+    def process_request(self, request):
         if 'Authorization' in request.headers:
             token = str(request.headers.get('Authorization')).split()[1]
 
@@ -18,3 +13,6 @@ class TokenValidationMiddleware(object):
                 raise ValidationError(message='Invalid Token')
 
         return None
+
+    def process_response(self, request, response):
+        return response
