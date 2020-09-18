@@ -8,7 +8,7 @@ from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from Contest.models import League, Match, Prediction
 from Contest.serializers import LeagueSerializer, MatchSerializer, PredictionSerializer, \
     ExtendedMatchSerializer, ExtendedPredictionSerializer, ExtendedLeagueSerializer, RankingsSerializer
