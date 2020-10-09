@@ -1,10 +1,9 @@
 from django.conf.urls import url
-from django.contrib import admin
-from django.urls import path, include
-from .views import CreateGroup, ListGroups
 
+from .views import GroupAPIView, UserGroupsAPIView
 
 urlpatterns = [
-    url(r'^creategroup/$', CreateGroup.as_view(), name="Create Group"),
-    url(r'^listgroup/$', ListGroups.as_view(), name="List Group"),
-    ]
+    url(r'^$', GroupAPIView.as_view(), name="Group View"),
+    url(r'^(?P<pk>[\d]+)/$', GroupAPIView.as_view(), name="Group View"),
+    url(r'^user_groups/(?P<pk>[\d]+)/$', UserGroupsAPIView.as_view(), name="User Groups View"),
+]

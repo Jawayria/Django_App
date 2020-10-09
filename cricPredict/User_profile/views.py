@@ -1,57 +1,101 @@
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.models import User
-from django.http import HttpResponse, request
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.shortcuts import render, redirect
-from django.views.generic import CreateView, FormView, RedirectView
+from django.conf import settings
+from django.contrib.auth.hashers import check_password
+from rest_framework.generics import GenericAPIView, get_object_or_404
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from rest_framework import status
+from django.core.cache import cache
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
+
+from .models import User
+from User_profile.serializers import UserSerializer
 
 
-# Create your views here.
-class Signup(CreateView):
-    model = User
-    form_class = UserCreationForm
-    template_name = 'signup.html'
-    success_url = "/group/creategroup"
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
-    def form_valid(self, form):
-        form = UserCreationForm(self.request.POST)
-        form.save()
-        username = self.request.POST['username']
-        password = self.request.POST['password1']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(self.request, user)
-            return redirect('/group/creategroup')
+
+class Signup(GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserSerializer
+    queryset = ''
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        user = User.objects.get(username=self.request.data['username'])
+        refresh = RefreshToken.for_user(user)
+        res = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+        return Response(res, status.HTTP_201_CREATED)
+
+
+class Login(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserSerializer
+    queryset = ''
+
+    def post(self, request, *args, **kwargs):
+        user = User.objects.get(username=self.request.data['username'])
+
+        if user is not None and check_password(self.request.data['password'], user.password):
+            refresh = RefreshToken.for_user(user)
+            res = {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+
+            return Response(res, status.HTTP_201_CREATED)
+
         else:
-            return HttpResponse("Couldn't create user.")
-
-    def form_invalid(self, form):
-        return render(self.request, 'signup.html', {'form': form})
+            return Response(status.HTTP_400_BAD_REQUEST)
 
 
-class Login(FormView):
-    model = User
-    form_class = AuthenticationForm
-    template_name = 'login.html'
-    success_url = "/group/creategroup"
+class UserAPIView(GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserSerializer
+    queryset = ''
 
-    def form_valid(self, form):
-        form = AuthenticationForm(self.request.POST)
-        username = self.request.POST['username']
-        password = self.request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(self.request, user)
-            return redirect('/group/creategroup')
+    def get(self, request, pk=None):
+        if pk is not None:
+            queryset = User.objects.get(pk=pk)
+            serializer = UserSerializer(queryset)
         else:
-            return HttpResponse("Invalid Username or Password")
+            queryset = User.objects.all()
+            serializer = UserSerializer(queryset, many=True)
 
-    def form_invalid(self, form):
-        return render(self.request, 'login.html', {'form': form})
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserSerializer(instance=user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        User.objects.filter(id=pk).delete()
+        return Response(status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserSerializer(instance=user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
 
 
-class Logout(RedirectView):
+class Logout(GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserSerializer
+    queryset = ''
 
-    def get(self, request1, *args, **kwargs):
-        logout(request1)
-        return redirect("/")
+    def get(self, request):
+        token = str(self.request.headers.get('Authorization')).split()[1]
+        cache.set(token, token, CACHE_TTL)
+        return Response(status=status.HTTP_200_OK)
