@@ -154,3 +154,9 @@ CACHES = {
     }
 }
 CACHE_TTL = 60 * 30  # Cache time to live
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'http://localhost:8080',)
