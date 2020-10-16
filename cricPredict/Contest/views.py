@@ -7,6 +7,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView, get_object_or_404, RetrieveAPIView, ListCreateAPIView, \
     RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -23,6 +24,23 @@ from Contest.serializers import (
 from Groups.models import Group
 
 
+class GetLeagueAPIView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = LeagueSerializer
+    queryset=''
+
+    def get(self, request, pk=None):
+        if pk is not None:
+            queryset = League.objects.get(pk=pk)
+            serializer = ExtendedLeagueSerializer(queryset)
+        else:
+            queryset = League.objects.filter(start_date__gte=datetime.date.today())
+            queryset = queryset.order_by('start_date')
+            serializer = ExtendedLeagueSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+
 class LeagueAPIView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = LeagueSerializer
@@ -36,17 +54,6 @@ class LeagueAPIView(APIView):
             serializer.save(groups=[])
         else:
             raise ParseError(detail="Dates are not valid")
-        return Response(serializer.data)
-
-    def get(self, request, pk=None):
-        if pk is not None:
-            queryset = League.objects.get(pk=pk)
-            serializer = ExtendedLeagueSerializer(queryset)
-        else:
-            queryset = League.objects.filter(start_date__gte=datetime.date.today())
-            queryset = queryset.order_by('start_date')
-            serializer = ExtendedLeagueSerializer(queryset, many=True)
-
         return Response(serializer.data)
 
     def put(self, request, pk):

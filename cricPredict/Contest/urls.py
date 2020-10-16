@@ -1,9 +1,10 @@
 from django.conf.urls import url
 from .views import LeagueAPIView, PredictionAPIView, LeagueMatchesAPIView, \
     GroupLeaguesAPIView, MatchPredictionsAPIView, UserPredictionsAPIView, RankingsAPIView, MatchListCreateView, \
-    MatchView
+    MatchView, GetLeagueAPIView
 
 urlpatterns = [
+    url(r'^league/get/$', GetLeagueAPIView.as_view(), name="GetLeague"),
     url(r'^league/$', LeagueAPIView.as_view(), name="League"),
     url(r'^league/(?P<pk>[\d]+)/$', LeagueAPIView.as_view(), name="League"),
     url(r'^group_leagues/(?P<pk>[\d]+)/$', GroupLeaguesAPIView.as_view(), name="Group Leagues View"),

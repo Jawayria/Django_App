@@ -6,7 +6,7 @@ from User_profile.models import User
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = ('name', 'privacy', 'users')
+        fields = ('id','name', 'privacy', 'users')
 
     def create(self, validated_data):
         user = User.objects.filter(username=self.context['user'])
@@ -18,6 +18,9 @@ class GroupSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.privacy = validated_data.get('privacy', instance.privacy)
+        instance.id = validated_data.get('id', instance.id)
+        print(instance.id)
+
         if 'users' in validated_data:
             instance.users.clear()
             for user in validated_data['users']:

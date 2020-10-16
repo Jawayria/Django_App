@@ -3,7 +3,6 @@ from django.contrib.auth.hashers import check_password
 from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework import status
@@ -27,10 +26,14 @@ class Signup(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         user = User.objects.get(username=self.request.data['username'])
+
         refresh = RefreshToken.for_user(user)
         res = {
             "refresh": str(refresh),
             "access": str(refresh.access_token),
+            "user_id": user.pk,
+            "user_name": str(user.username),
+            "user_coins": user.coins,
         }
         return Response(res, status.HTTP_201_CREATED)
 
@@ -48,6 +51,9 @@ class Login(APIView):
             res = {
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
+                "user_id": user.pk,
+                "user_name": str(user.username),
+                "user_coins": user.coins,
             }
 
             return Response(res, status.HTTP_201_CREATED)
