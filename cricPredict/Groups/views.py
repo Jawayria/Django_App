@@ -6,7 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Group
-from User_profile.models import User
 from .serializers import GroupSerializer
 
 
@@ -20,6 +19,7 @@ class GroupAPIView(APIView):
         serializer = GroupSerializer(data=self.request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        print (request.data)
         return Response(serializer.data)
 
     def get(self, request, pk=None):
@@ -57,6 +57,20 @@ class UserGroupsAPIView(APIView):
     queryset = ''
 
     def get(self, request, pk):
+
         queryset = Group.objects.filter(users__in=[pk])
         serializer = GroupSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class OtherPublicGroupsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = GroupSerializer
+    queryset = ''
+
+    def get(self, request, pk):
+
+        queryset = Group.objects.filter(privacy='public').exclude(users__in=[pk])
+        serializer = GroupSerializer(queryset, many=True)
+        return Response(serializer.data)
+
