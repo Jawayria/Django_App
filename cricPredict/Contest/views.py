@@ -4,14 +4,22 @@ import datetime
 from django.db.models import Sum
 from rest_framework import status
 from rest_framework.exceptions import ParseError
-from rest_framework.generics import GenericAPIView, get_object_or_404
+from rest_framework.generics import GenericAPIView, get_object_or_404, RetrieveAPIView, ListCreateAPIView, \
+    RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from Contest.models import League, Match, Prediction
-from Contest.serializers import LeagueSerializer, MatchSerializer, PredictionSerializer, \
-    ExtendedMatchSerializer, ExtendedPredictionSerializer, ExtendedLeagueSerializer, RankingsSerializer
+from Contest.serializers import (
+    LeagueSerializer,
+    MatchSerializer,
+    PredictionSerializer,
+    ExtendedMatchSerializer,
+    ExtendedPredictionSerializer,
+    ExtendedLeagueSerializer,
+    RankingsSerializer,
+)
 from Groups.models import Group
 
 
@@ -78,60 +86,97 @@ class GroupLeaguesAPIView(APIView):
         return Response(serializer.data)
 
 
-class MatchAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+class MatchListCreateView(ListCreateAPIView):
     serializer_class = MatchSerializer
-    queryset = ''
+    queryset = Match.objects.all()
 
-    def post(self, request, *args, **kwargs):
-        serializer = MatchSerializer(data=self.request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
 
-    def get(self, request, pk=None):
-        if pk is not None:
-            queryset = Match.objects.get(pk=pk)
-            serializer = ExtendedMatchSerializer(queryset)
-        else:
-            queryset = Match.objects.all()
-            queryset.order_by('time')
-            serializer = ExtendedMatchSerializer(queryset, many=True)
+class MatchView(RetrieveUpdateDestroyAPIView):
+    serializer_class = MatchSerializer
+    queryset = Match.objects.all()
 
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        match = get_object_or_404(Match, pk=pk)
-        serializer = ExtendedMatchSerializer(instance=match, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_200_OK)
-
-    def delete(self, request, pk):
-        Match.objects.filter(id=pk).delete()
-        return Response(status=status.HTTP_200_OK)
-
-    def patch(self, request, pk):
-        match = get_object_or_404(Match, pk=pk)
-        if 'winner' in request.data:
-            if not (request.data['winner'] == match.team1 or request.data['winner'] == match.team2):
-                request.data['winner'] = 'draw'
-        serializer = ExtendedMatchSerializer(instance=match, data=request.data, partial=True)
+    def patch(self, request, *args, **kwargs):
+        match = get_object_or_404(Match, pk=kwargs['pk'])
+        if "winner" in request.data:
+            if not (
+                    request.data["winner"] == match.team1
+                    or request.data["winner"] == match.team2
+            ):
+                request.data["winner"] = "draw"
+        serializer = ExtendedMatchSerializer(
+            instance=match, data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
 
 
-class LeagueMatchesAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+# class MatchAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = MatchSerializer
+#     queryset = ""
+#
+#     def post(self, request, *args, **kwargs):
+#         serializer = MatchSerializer(data=self.request.data)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data)
+#
+#     def get(self, request, pk=None):
+#         if pk is not None:
+#             queryset = Match.objects.get(pk=pk)
+#             serializer = ExtendedMatchSerializer(queryset)
+#         else:
+#             queryset = Match.objects.all()
+#             queryset.order_by("time")
+#             serializer = ExtendedMatchSerializer(queryset, many=True)
+#
+#         return Response(serializer.data)
+#
+#     def put(self, request, pk):
+#         match = get_object_or_404(Match, pk=pk)
+#         serializer = ExtendedMatchSerializer(instance=match, data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(status=status.HTTP_200_OK)
+#
+#     def delete(self, request, pk):
+#         Match.objects.filter(id=pk).delete()
+#         return Response(status=status.HTTP_200_OK)
+#
+#     def patch(self, request, pk):
+#         match = get_object_or_404(Match, pk=pk)
+#         if "winner" in request.data:
+#             if not (
+#                     request.data["winner"] == match.team1
+#                     or request.data["winner"] == match.team2
+#             ):
+#                 request.data["winner"] = "draw"
+#         serializer = ExtendedMatchSerializer(
+#             instance=match, data=request.data, partial=True
+#         )
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(status=status.HTTP_200_OK)
+
+
+class LeagueMatchesAPIView(RetrieveAPIView):
     serializer_class = ExtendedMatchSerializer
-    queryset=''
 
-    def get(self, request, pk):
-        queryset = Match.objects.filter(league=pk)
-        queryset.order_by('time')
-        serializer = ExtendedMatchSerializer(queryset, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Match.objects.filter(league=self.kwargs["pk"]).order_by("time")
+
+
+# class LeagueMatchesAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = ExtendedMatchSerializer
+#     queryset = ""
+
+#     def get(self, request, pk):
+#         queryset = Match.objects.filter(league=pk)
+#         queryset.order_by("time")
+#         serializer = ExtendedMatchSerializer(queryset, many=True)
+#         return Response(serializer.data)
 
 
 class PredictionAPIView(GenericAPIView):
