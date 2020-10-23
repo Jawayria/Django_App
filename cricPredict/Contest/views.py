@@ -26,7 +26,7 @@ from Groups.models import Group
 
 class GetLeagueAPIView(APIView):
     permission_classes = [AllowAny]
-    serializer_class = LeagueSerializer
+    serializer_class = ExtendedLeagueSerializer
     queryset=''
 
     def get(self, request, pk=None):
@@ -71,13 +71,17 @@ class LeagueAPIView(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def patch(self, request, pk):
+        print(request.data)
         league = get_object_or_404(League, pk=pk)
         serializer = ExtendedLeagueSerializer(instance=league, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        if request.data['start_date'] < request.data['end_date']:
-            serializer.save()
+        if 'start_date' in request.data and 'end_date' in request.data:
+            if request.data['start_date'] < request.data['end_date']:
+                serializer.save()
+            else:
+                raise ParseError(detail="Dates are not valid")
         else:
-            raise ParseError(detail="Dates are not valid")
+            serializer.save()
         return Response(status=status.HTTP_200_OK)
 
 
