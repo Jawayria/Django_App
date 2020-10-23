@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.fields import CharField
+
 from .models import Group
 from User_profile.models import User
 
