@@ -30,3 +30,9 @@ class GroupSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class ExtendedGroupSerializer (GroupSerializer):
+    class Meta:
+        model = Group
+        fields = GroupSerializer.Meta.fields + ('admin',)

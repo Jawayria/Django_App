@@ -5,7 +5,7 @@ from .models import Match, League, Prediction
 class LeagueSerializer(serializers.ModelSerializer):
     class Meta:
         model = League
-        fields = ('name', 'start_date', 'end_date')
+        fields = ('id', 'name', 'start_date', 'end_date')
 
 
 class ExtendedLeagueSerializer(LeagueSerializer):
@@ -17,7 +17,7 @@ class ExtendedLeagueSerializer(LeagueSerializer):
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
-        fields = ('team1', 'team2', 'time', 'league')
+        fields = ('id','team1', 'team2', 'time', 'league')
 
 
 class ExtendedMatchSerializer(MatchSerializer):

@@ -1,25 +1,18 @@
 from django.conf.urls import url
-<<<<<<< HEAD
 from .views import LeagueAPIView, PredictionAPIView, LeagueMatchesAPIView, \
     GroupLeaguesAPIView, MatchPredictionsAPIView, UserPredictionsAPIView, RankingsAPIView, MatchListCreateView, \
-    MatchView, GetLeagueAPIView
+    MatchView, GetLeagueAPIView, TodaysMatchesAPIView
 
 urlpatterns = [
     url(r'^league/get/$', GetLeagueAPIView.as_view(), name="GetLeague"),
     url(r'^league/get/(?P<pk>[\d]+)/$', GetLeagueAPIView.as_view(), name="GetLeague"),
-=======
-from .views import LeagueAPIView, MatchAPIView, PredictionAPIView, LeagueMatchesAPIView, \
-    GroupLeaguesAPIView, MatchPredictionsAPIView, UserPredictionsAPIView, RankingsAPIView, GetLeagueAPIView
-
-urlpatterns = [
-    url(r'^league/get/$', GetLeagueAPIView.as_view(), name="GetLeague"),
->>>>>>> bc5822c6369ddbc5041abd2e151b950b9f009ab0
     url(r'^league/$', LeagueAPIView.as_view(), name="League"),
     url(r'^league/(?P<pk>[\d]+)/$', LeagueAPIView.as_view(), name="League"),
     url(r'^group_leagues/(?P<pk>[\d]+)/$', GroupLeaguesAPIView.as_view(), name="Group Leagues View"),
     url(r'^match/$', MatchListCreateView.as_view(), name="Match"),
     url(r'^match/(?P<pk>[\d]+)/$', MatchView.as_view(), name="Match"),
     url(r'^league_matches/(?P<pk>[\d]+)/$', LeagueMatchesAPIView.as_view(), name="League Matches View"),
+    url(r'^todays_matches/(?P<pk>[\d]+)/$', TodaysMatchesAPIView.as_view(), name="Today's Matches View"),
     url(r'^prediction/$', PredictionAPIView.as_view(), name="Prediction"),
     url(r'^prediction/(?P<pk>[\d]+)/$', PredictionAPIView.as_view(), name="Prediction"),
     url(r'^match_predictions/(?P<match>[\d]+)/(?P<group>[\d]+)/$', MatchPredictionsAPIView.as_view(),

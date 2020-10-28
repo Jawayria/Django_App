@@ -126,6 +126,21 @@ class LeagueMatchesAPIView(RetrieveAPIView):
     def get_queryset(self):
         return Match.objects.filter(league=self.kwargs["pk"]).order_by("time")
 
+    def get(self, request, pk):
+        return Response(ExtendedMatchSerializer(self.get_queryset(), many=True).data)
+
+
+class TodaysMatchesAPIView(RetrieveAPIView):
+    serializer_class = ExtendedMatchSerializer
+
+    def get_queryset(self):
+        start = datetime.date.today()
+        end = start + datetime.timedelta(days=1)
+        return Match.objects.filter(league=self.kwargs["pk"], time__range=(start, end)).order_by("time")
+
+    def get(self, request, pk):
+        return Response(ExtendedMatchSerializer(self.get_queryset(), many=True).data)
+
 
 class PredictionAPIView(GenericAPIView):
     permission_classes = [IsAuthenticated]

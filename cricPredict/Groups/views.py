@@ -1,12 +1,10 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status
-from django.views.generic import ListView
-from rest_framework.exceptions import ParseError
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Group
-from .serializers import GroupSerializer
+from .serializers import GroupSerializer, ExtendedGroupSerializer
 from rest_framework.generics import RetrieveAPIView
 
 
@@ -25,10 +23,10 @@ class GroupAPIView(APIView):
     def get(self, request, pk=None):
         if pk is not None:
             queryset = Group.objects.get(pk=pk)
-            serializer = GroupSerializer(queryset)
+            serializer = ExtendedGroupSerializer(queryset)
         else:
             queryset = Group.objects.filter(privacy='public')
-            serializer = GroupSerializer(queryset, many=True)
+            serializer = ExtendedGroupSerializer(queryset, many=True)
 
         return Response(serializer.data)
 
@@ -73,6 +71,7 @@ class OtherPublicGroupsAPIView(APIView):
         serializer = GroupSerializer(queryset, many=True)
         return Response(serializer.data)
 
+
 class RetrieveGroupsDictAPIView(RetrieveAPIView):
     serializer_class = GroupSerializer
 
@@ -95,8 +94,8 @@ class RetrieveGroupsDictAPIView(RetrieveAPIView):
             if not joined and group.privacy == 'public':
                 publicGroups.append(group)
 
-        public_groups_serializer = GroupSerializer(publicGroups, many=True)
-        joined_groups_serializer = GroupSerializer(joinedGroups, many=True)
+        public_groups_serializer = ExtendedGroupSerializer(publicGroups, many=True)
+        joined_groups_serializer = ExtendedGroupSerializer(joinedGroups, many=True)
 
         return Response(
             {"public_groups": public_groups_serializer.data, "joined_groups": joined_groups_serializer.data})
