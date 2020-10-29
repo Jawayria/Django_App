@@ -138,16 +138,12 @@ class TodaysMatchesAPIView(RetrieveAPIView):
         start = datetime.date.today()
         end = start + datetime.timedelta(days=1)
         todays_matches = Match.objects.filter(league=self.kwargs["league"], time__range=(start, end)).order_by("time")
-        predictions = Prediction.objects.filter(user=self.kwargs["user"], group=self.kwargs["group"],
-                                                match__in=todays_matches, time__range=(start, end))
+
         for match in todays_matches:
-            match.prediction = ''
-            for prediction in predictions:
-                if prediction.match == match:
-                    match.prediction = prediction.prediction
+            match.user_prediction = match.predictions.objects.filter(user__uuid=self.kwargs['user']).filter(group__id=self.kwargs['group'])
+            # handle single or multiple results
 
         print(todays_matches)
-        print(predictions)
         return todays_matches
 
     def get(self, request, league, group, user):

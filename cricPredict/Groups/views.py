@@ -28,6 +28,12 @@ class GroupViewSet(viewsets.ModelViewSet):
         public_groups = []
         joined_groups = []
 
+        user_groups = queryset.filter(users__in=[pk])
+        user_group_ids = user_groups.values('id')
+        public_groups = queryset.filter(privacy='public').exclude(id__in=user_group_ids)
+
+        # verify the filters
+
         for group in queryset:
             joined = False
             for joined_group_id in joined_groups_ids:
