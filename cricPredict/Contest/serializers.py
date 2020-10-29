@@ -26,6 +26,17 @@ class ExtendedMatchSerializer(MatchSerializer):
         fields = MatchSerializer.Meta.fields + ('winner',)
 
 
+class PredictionMatchSerializer(serializers.ModelSerializer):
+    prediction = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Match
+        fields = ('id', 'team1', 'team2', 'time', 'league', 'prediction')
+
+    def get_prediction(self, obj):
+        return obj.prediction
+
+
 class PredictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prediction
