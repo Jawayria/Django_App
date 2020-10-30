@@ -22,29 +22,15 @@ class GroupViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
-    def groups_dict(self, request, pk=None):
-        joined_groups_ids = Group.objects.filter(users__in=[pk]).values('id')
+    def categorized_groups(self, request, pk=None):
         queryset = self.get_queryset()
-        public_groups = []
-        joined_groups = []
 
         user_groups = queryset.filter(users__in=[pk])
         user_group_ids = user_groups.values('id')
         public_groups = queryset.filter(privacy='public').exclude(id__in=user_group_ids)
 
-        # verify the filters
-
-        for group in queryset:
-            joined = False
-            for joined_group_id in joined_groups_ids:
-                if group.id == joined_group_id['id']:
-                    joined = True
-                    joined_groups.append(group)
-            if not joined and group.privacy == 'public':
-                public_groups.append(group)
-
         public_groups_serializer = ExtendedGroupSerializer(public_groups, many=True)
-        joined_groups_serializer = ExtendedGroupSerializer(joined_groups, many=True)
+        joined_groups_serializer = ExtendedGroupSerializer(user_groups, many=True)
 
         return Response(
             {"public_groups": public_groups_serializer.data, "joined_groups": joined_groups_serializer.data})

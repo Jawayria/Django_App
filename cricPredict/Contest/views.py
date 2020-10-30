@@ -69,7 +69,6 @@ class LeagueAPIView(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def patch(self, request, pk):
-        print(request.data)
         league = get_object_or_404(League, pk=pk)
         serializer = ExtendedLeagueSerializer(instance=league, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -134,20 +133,20 @@ class TodaysMatchesAPIView(RetrieveAPIView):
     serializer_class = PredictionMatchSerializer
 
     def get_queryset(self):
-        print("In")
         start = datetime.date.today()
         end = start + datetime.timedelta(days=1)
         todays_matches = Match.objects.filter(league=self.kwargs["league"], time__range=(start, end)).order_by("time")
 
         for match in todays_matches:
-            match.user_prediction = match.predictions.objects.filter(user__uuid=self.kwargs['user']).filter(group__id=self.kwargs['group'])
-            # handle single or multiple results
+            match.user_prediction = match.predictions.filter(user=self.kwargs['user']).filter(group=self.kwargs['group'])
+            if match.user_prediction:
+                match.prediction = match.user_prediction[0].prediction
+            else:
+                match.prediction = ''
 
-        print(todays_matches)
         return todays_matches
 
     def get(self, request, league, group, user):
-        print("Get")
         return Response(PredictionMatchSerializer(self.get_queryset(), many=True).data)
 
 
