@@ -21,7 +21,7 @@ class Match(models.Model):
 
 class Prediction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='predictions')
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     prediction = models.CharField(max_length=50)
     score = models.IntegerField(null=True, blank=True)
