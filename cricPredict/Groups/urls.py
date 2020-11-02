@@ -1,9 +1,11 @@
 from django.conf.urls import url
+from django.urls import path, include
+from . import views
+from rest_framework.routers import DefaultRouter
 
-from .views import GroupAPIView, UserGroupsAPIView
+router = DefaultRouter()
+router.register(r'', views.GroupViewSet)
 
 urlpatterns = [
-    url(r'^$', GroupAPIView.as_view(), name="Group View"),
-    url(r'^(?P<pk>[\d]+)/$', GroupAPIView.as_view(), name="Group View"),
-    url(r'^user_groups/(?P<pk>[\d]+)/$', UserGroupsAPIView.as_view(), name="User Groups View"),
+    path('', include(router.urls))
 ]

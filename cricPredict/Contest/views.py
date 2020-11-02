@@ -1,15 +1,14 @@
 import datetime
 
-# Create your views here.
 from django.db.models import Sum
 from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView, get_object_or_404, RetrieveAPIView, ListCreateAPIView, \
     RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from Contest.models import League, Match, Prediction
 from Contest.serializers import (
     LeagueSerializer,
@@ -18,9 +17,26 @@ from Contest.serializers import (
     ExtendedMatchSerializer,
     ExtendedPredictionSerializer,
     ExtendedLeagueSerializer,
-    RankingsSerializer,
+    RankingsSerializer, PredictionMatchSerializer,
 )
 from Groups.models import Group
+
+
+class GetLeagueAPIView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = ExtendedLeagueSerializer
+    queryset=''
+
+    def get(self, request, pk=None):
+        if pk is not None:
+            queryset = League.objects.get(pk=pk)
+            serializer = ExtendedLeagueSerializer(queryset)
+        else:
+            queryset = League.objects.filter(start_date__gte=datetime.date.today())
+            queryset = queryset.order_by('start_date')
+            serializer = ExtendedLeagueSerializer(queryset, many=True)
+
+        return Response(serializer.data)
 
 
 class LeagueAPIView(APIView):
@@ -38,17 +54,6 @@ class LeagueAPIView(APIView):
             raise ParseError(detail="Dates are not valid")
         return Response(serializer.data)
 
-    def get(self, request, pk=None):
-        if pk is not None:
-            queryset = League.objects.get(pk=pk)
-            serializer = ExtendedLeagueSerializer(queryset)
-        else:
-            queryset = League.objects.filter(start_date__gte=datetime.date.today())
-            queryset = queryset.order_by('start_date')
-            serializer = ExtendedLeagueSerializer(queryset, many=True)
-
-        return Response(serializer.data)
-
     def put(self, request, pk):
         league = get_object_or_404(League, pk=pk)
         serializer = ExtendedLeagueSerializer(instance=league, data=request.data)
@@ -64,13 +69,17 @@ class LeagueAPIView(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def patch(self, request, pk):
+        print(request.data)
         league = get_object_or_404(League, pk=pk)
         serializer = ExtendedLeagueSerializer(instance=league, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        if request.data['start_date'] < request.data['end_date']:
-            serializer.save()
+        if 'start_date' in request.data and 'end_date' in request.data:
+            if request.data['start_date'] < request.data['end_date']:
+                serializer.save()
+            else:
+                raise ParseError(detail="Dates are not valid")
         else:
-            raise ParseError(detail="Dates are not valid")
+            serializer.save()
         return Response(status=status.HTTP_200_OK)
 
 
@@ -111,72 +120,39 @@ class MatchView(RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-# class MatchAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = MatchSerializer
-#     queryset = ""
-#
-#     def post(self, request, *args, **kwargs):
-#         serializer = MatchSerializer(data=self.request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(serializer.data)
-#
-#     def get(self, request, pk=None):
-#         if pk is not None:
-#             queryset = Match.objects.get(pk=pk)
-#             serializer = ExtendedMatchSerializer(queryset)
-#         else:
-#             queryset = Match.objects.all()
-#             queryset.order_by("time")
-#             serializer = ExtendedMatchSerializer(queryset, many=True)
-#
-#         return Response(serializer.data)
-#
-#     def put(self, request, pk):
-#         match = get_object_or_404(Match, pk=pk)
-#         serializer = ExtendedMatchSerializer(instance=match, data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(status=status.HTTP_200_OK)
-#
-#     def delete(self, request, pk):
-#         Match.objects.filter(id=pk).delete()
-#         return Response(status=status.HTTP_200_OK)
-#
-#     def patch(self, request, pk):
-#         match = get_object_or_404(Match, pk=pk)
-#         if "winner" in request.data:
-#             if not (
-#                     request.data["winner"] == match.team1
-#                     or request.data["winner"] == match.team2
-#             ):
-#                 request.data["winner"] = "draw"
-#         serializer = ExtendedMatchSerializer(
-#             instance=match, data=request.data, partial=True
-#         )
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(status=status.HTTP_200_OK)
-
-
 class LeagueMatchesAPIView(RetrieveAPIView):
     serializer_class = ExtendedMatchSerializer
 
     def get_queryset(self):
         return Match.objects.filter(league=self.kwargs["pk"]).order_by("time")
 
+    def get(self, request, pk):
+        return Response(ExtendedMatchSerializer(self.get_queryset(), many=True).data)
 
-# class LeagueMatchesAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = ExtendedMatchSerializer
-#     queryset = ""
 
-#     def get(self, request, pk):
-#         queryset = Match.objects.filter(league=pk)
-#         queryset.order_by("time")
-#         serializer = ExtendedMatchSerializer(queryset, many=True)
-#         return Response(serializer.data)
+class TodaysMatchesAPIView(RetrieveAPIView):
+    serializer_class = PredictionMatchSerializer
+
+    def get_queryset(self):
+        print("In")
+        start = datetime.date.today()
+        end = start + datetime.timedelta(days=1)
+        todays_matches = Match.objects.filter(league=self.kwargs["league"], time__range=(start, end)).order_by("time")
+        predictions = Prediction.objects.filter(user=self.kwargs["user"], group=self.kwargs["group"],
+                                                match__in=todays_matches, time__range=(start, end))
+        for match in todays_matches:
+            match.prediction = ''
+            for prediction in predictions:
+                if prediction.match == match:
+                    match.prediction = prediction.prediction
+
+        print(todays_matches)
+        print(predictions)
+        return todays_matches
+
+    def get(self, request, league, group, user):
+        print("Get")
+        return Response(PredictionMatchSerializer(self.get_queryset(), many=True).data)
 
 
 class PredictionAPIView(GenericAPIView):

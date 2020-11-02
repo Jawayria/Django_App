@@ -1,62 +1,44 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status
-from django.views.generic import ListView
-from rest_framework.exceptions import ParseError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Group
-from User_profile.models import User
-from .serializers import GroupSerializer
+from .serializers import GroupSerializer, ExtendedGroupSerializer
+from rest_framework.generics import RetrieveAPIView
 
 
 # Create your views here.
-class GroupAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = GroupSerializer
-    queryset = ''
+class GroupViewSet(viewsets.ModelViewSet):
 
-    def post(self, request):
+    serializer_class = GroupSerializer
+    queryset = Group.objects.all()
+
+    def create(self, request):
         serializer = GroupSerializer(data=self.request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
-    def get(self, request, pk=None):
-        if pk is not None:
-            queryset = Group.objects.get(pk=pk)
-            serializer = GroupSerializer(queryset)
-        else:
-            queryset = Group.objects.filter(privacy='public')
-            serializer = GroupSerializer(queryset, many=True)
+    @action(detail=True, methods=['get'])
+    def groups_dict(self, request, pk=None):
+        joined_groups_ids = Group.objects.filter(users__in=[pk]).values('id')
+        queryset = self.get_queryset()
+        public_groups = []
+        joined_groups = []
 
-        return Response(serializer.data)
+        for group in queryset:
+            joined = False
+            for joined_group_id in joined_groups_ids:
+                if group.id == joined_group_id['id']:
+                    joined = True
+                    joined_groups.append(group)
+            if not joined and group.privacy == 'public':
+                public_groups.append(group)
 
-    def put(self, request, pk):
-        group = get_object_or_404(Group, pk=pk)
-        serializer = GroupSerializer(instance=group, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_200_OK)
+        public_groups_serializer = ExtendedGroupSerializer(public_groups, many=True)
+        joined_groups_serializer = ExtendedGroupSerializer(joined_groups, many=True)
 
-    def delete(self, request, pk):
-        Group.objects.filter(id=pk).delete()
-        return Response(status=status.HTTP_200_OK)
-
-    def patch(self, request, pk):
-        group = get_object_or_404(Group, pk=pk)
-        serializer = GroupSerializer(instance=group, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_200_OK)
-
-
-class UserGroupsAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = GroupSerializer
-    queryset = ''
-
-    def get(self, request, pk):
-        queryset = Group.objects.filter(users__in=[pk])
-        serializer = GroupSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(
+            {"public_groups": public_groups_serializer.data, "joined_groups": joined_groups_serializer.data})
