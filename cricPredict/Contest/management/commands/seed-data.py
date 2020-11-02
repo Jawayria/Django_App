@@ -10,7 +10,7 @@ from django.utils.timezone import get_current_timezone
 
 
 class Command(BaseCommand):
-    help = 'Enters records for groups, leagues and matches to DB'
+    help = 'Enters records for leagues and matches to DB'
 
     def handle(self, *args, **kwargs):
 
