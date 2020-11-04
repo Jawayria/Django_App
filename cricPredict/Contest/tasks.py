@@ -21,7 +21,7 @@ def fetch_data():
         os.environ['API_KEY'] = data['api_key']
 
         headers = {
-            'x-rapidapi-key': os.getenv('API_KEY'),
+            'x-rapidapi-key': data['api_key'],
             'x-rapidapi-host': "dev132-cricket-live-scores-v1.p.rapidapi.com"
         }
 
