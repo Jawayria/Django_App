@@ -5,6 +5,8 @@ import json
 from .models import League, Match
 from datetime import datetime
 from django.utils.timezone import get_current_timezone
+import os
+from pathlib import Path
 
 
 @periodic_task(run_every=(crontab(minute='*')), name="fetch_data", ignore_result=True)
@@ -12,8 +14,14 @@ def fetch_data():
     try:
         url = "https://rapidapi.p.rapidapi.com/series.php"
 
+        script_location = Path(__file__).absolute().parent
+        file_location = script_location / 'api_key.json'
+        file = file_location.open()
+        data = json.loads(file.read())
+        os.environ['API_KEY'] = data['api_key']
+
         headers = {
-            'x-rapidapi-key': "94d65a12cbmsh65295dae3718214p1ee3b8jsn335c8c3f26ef",
+            'x-rapidapi-key': os.getenv('API_KEY'),
             'x-rapidapi-host': "dev132-cricket-live-scores-v1.p.rapidapi.com"
         }
 
@@ -35,7 +43,7 @@ def fetch_data():
                     end_date = series['endDateTime'].split('/')
                     end_date = datetime(int(end_date[2]), int(end_date[0]), int(end_date[1]))
 
-                    league = League(api_id=series['id'], name=series['name'], start_date=start_date.strftime("%Y-%m-%d"),
+                    league = League(league_id=series['id'], name=series['name'], start_date=start_date.strftime("%Y-%m-%d"),
                                     end_date=end_date.strftime("%Y-%m-%d"))
 
                     league.save()
@@ -55,5 +63,5 @@ def fetch_data():
 
         return True
     except:
-        return
+        return False
 
