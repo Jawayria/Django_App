@@ -12,9 +12,7 @@ import django
 from channels.auth import AuthMiddlewareStack
 from channels.http import AsgiHandler
 from channels.routing import ProtocolTypeRouter, URLRouter
-from django.urls import path
-
-from Contest.consumers import LeaguesConsumer
+from Contest.routing import websocket_urlpatterns
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cricPredict.settings')
 django.setup()
@@ -22,9 +20,7 @@ django.setup()
 application = ProtocolTypeRouter({
   "http": AsgiHandler(),
   "websocket": AuthMiddlewareStack(
-        URLRouter([
-          path("/leagues_data", LeaguesConsumer.as_asgi()),
-        ])
+        URLRouter(websocket_urlpatterns)
     ),
   # Just HTTP for now. (We can add other protocols later.)
 })
