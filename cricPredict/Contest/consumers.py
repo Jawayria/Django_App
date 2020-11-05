@@ -6,6 +6,7 @@ class LeaguesConsumer(WebsocketConsumer):
 
     def connect(self):
         self.accept()
+        self.send("HI")
 
     def receive(self, text_data=None, bytes_data=None):
         self.send(get_leagues())

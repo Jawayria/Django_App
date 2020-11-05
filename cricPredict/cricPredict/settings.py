@@ -178,10 +178,9 @@ CELERY_TIMEZONE = 'Asia/Karachi'
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'asgi_redis.RedisChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('localhost', 6379)],
+            "hosts": [('127.0.0.1', 6379)],
         },
-        'ROUTING': 'example_channels.routing.channel_routing',
-    }
+    },
 }
