@@ -261,4 +261,4 @@ bower_components
 psd
 thumb
 sketch
-api_key.json
+local_settings.py
