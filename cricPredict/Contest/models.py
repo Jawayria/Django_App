@@ -29,5 +29,5 @@ class Prediction(models.Model):
     time = models.DateTimeField()
 
     class Meta:
-        unique_together = ['user_id', 'group_id', 'match_id']
+        unique_together = ['user', 'group', 'match']
 
