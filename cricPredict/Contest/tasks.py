@@ -8,6 +8,7 @@ from django.utils.timezone import get_current_timezone
 import os
 from pathlib import Path
 from cricPredict.settings import API_KEY
+from django.db.models.signals import post_save
 
 
 @periodic_task(run_every=(crontab(minute='*')), name="fetch_data", ignore_result=True)
