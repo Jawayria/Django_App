@@ -23,11 +23,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def categorized_groups(self, request, pk=None):
-<<<<<<< HEAD
         print("TDTTDDTTDTD")
-=======
-        joined_groups_ids = Group.objects.filter(users__in=[pk]).values('id')
->>>>>>> 544e60a0697ab68e6cce1185988ab1de4b5de104
         queryset = self.get_queryset()
 
         user_groups = queryset.filter(users__in=[pk])
