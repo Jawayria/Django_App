@@ -22,7 +22,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
-    def groups_dict(self, request, pk=None):
+    def categorized_groups(self, request, pk=None):
         joined_groups_ids = Group.objects.filter(users__in=[pk]).values('id')
         queryset = self.get_queryset()
         public_groups = []

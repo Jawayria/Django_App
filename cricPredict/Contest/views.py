@@ -20,6 +20,7 @@ from Contest.serializers import (
     RankingsSerializer, PredictionMatchSerializer,
 )
 from Groups.models import Group
+from .functions import get_leagues
 
 
 class GetLeagueAPIView(APIView):
@@ -32,9 +33,7 @@ class GetLeagueAPIView(APIView):
             queryset = League.objects.get(pk=pk)
             serializer = ExtendedLeagueSerializer(queryset)
         else:
-            queryset = League.objects.filter(start_date__gte=datetime.date.today())
-            queryset = queryset.order_by('start_date')
-            serializer = ExtendedLeagueSerializer(queryset, many=True)
+            return Response(get_leagues())
 
         return Response(serializer.data)
 
@@ -134,7 +133,6 @@ class TodaysMatchesAPIView(RetrieveAPIView):
     serializer_class = PredictionMatchSerializer
 
     def get_queryset(self):
-        print("In")
         start = datetime.date.today()
         end = start + datetime.timedelta(days=1)
         todays_matches = Match.objects.filter(league=self.kwargs["league"], time__range=(start, end)).order_by("time")
@@ -146,8 +144,6 @@ class TodaysMatchesAPIView(RetrieveAPIView):
                 if prediction.match == match:
                     match.prediction = prediction.prediction
 
-        print(todays_matches)
-        print(predictions)
         return todays_matches
 
     def get(self, request, league, group, user):
