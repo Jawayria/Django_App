@@ -20,6 +20,7 @@ from Contest.serializers import (
     RankingsSerializer, PredictionMatchSerializer,
 )
 from Groups.models import Group
+from .functions import get_leagues
 
 
 class GetLeagueAPIView(APIView):
@@ -32,9 +33,7 @@ class GetLeagueAPIView(APIView):
             queryset = League.objects.get(pk=pk)
             serializer = ExtendedLeagueSerializer(queryset)
         else:
-            queryset = League.objects.filter(start_date__gte=datetime.date.today())
-            queryset = queryset.order_by('start_date')
-            serializer = ExtendedLeagueSerializer(queryset, many=True)
+            return Response(get_leagues())
 
         return Response(serializer.data)
 
