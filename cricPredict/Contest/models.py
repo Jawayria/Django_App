@@ -5,6 +5,7 @@ from User_profile.models import User
 
 # Create your models here.
 class League(models.Model):
+    league_id = models.IntegerField(default=0)
     name = models.CharField(max_length=50)
     start_date = models.DateField()
     end_date = models.DateField()
