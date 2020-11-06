@@ -176,10 +176,6 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Karachi'
 
-try:
-    from .local_settings import *
-except ImportError:
-    pass
 
 CHANNEL_LAYERS = {
     'default': {
@@ -189,3 +185,9 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass
