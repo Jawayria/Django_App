@@ -1,12 +1,8 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from .models import Group
 from .serializers import GroupSerializer, ExtendedGroupSerializer
-from rest_framework.generics import RetrieveAPIView
 
 
 # Create your views here.
@@ -23,7 +19,6 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def categorized_groups(self, request, pk=None):
-        print("TDTTDDTTDTD")
         queryset = self.get_queryset()
 
         user_groups = queryset.filter(users__in=[pk])

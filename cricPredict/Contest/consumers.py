@@ -12,6 +12,9 @@ class LeaguesConsumer(WebsocketConsumer):
         self.accept()
 
     def receive(self, text_data=None, bytes_data=None):
+        print("get")
+        print(self.channel_name)
+        print(self.channel_layer)
         self.send(json.dumps(get_leagues()))
 
     def disconnect(self, code):
