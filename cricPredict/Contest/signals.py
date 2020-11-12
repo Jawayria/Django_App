@@ -1,4 +1,5 @@
 import json
+import logging
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -8,11 +9,13 @@ from django.dispatch import receiver
 from .functions import get_leagues
 from .models import League, Match
 
+logger = logging.getLogger(__name__)
+
 
 def data(event):
-    '''
+    """
     Call back function to send message to the browser
-    '''
+    """
     print("CALLBACK")
     leagues = event['text']
     channel_layer = get_channel_layer()
@@ -24,8 +27,7 @@ def data(event):
 
 @receiver(post_save, sender=League, dispatch_uid='push_leagues_data')
 def push_leagues_data(sender, instance, **kwargs):
-
-    print("SIGNAL")
+    logger.debug("received post save signal for league")
     group_name = 'leagues'
     user = instance.owner
     group_name = 'leagues-{}'.format(user.username)
@@ -42,4 +44,3 @@ def push_leagues_data(sender, instance, **kwargs):
             'text': leagues
         }
     )
-
