@@ -1,22 +1,16 @@
-from asgiref.sync import async_to_sync
 from celery.schedules import crontab
 from celery.task import task, periodic_task
 import requests
 import json
-
-from .functions import get_leagues
 from .models import League, Match
 from datetime import datetime
 from django.utils.timezone import get_current_timezone
-import os
-from pathlib import Path
 from cricPredict.settings import API_KEY
-from channels.layers import get_channel_layer
 
 
 @periodic_task(run_every=(crontab(minute='*')), name="fetch_data", ignore_result=True)
 def fetch_data():
-    #try:
+    try:
         url = "https://rapidapi.p.rapidapi.com/series.php"
 
         headers = {
@@ -48,10 +42,8 @@ def fetch_data():
 
                         league = League(league_id=series['id'], name=series['name'], start_date=start_date.strftime("%Y-%m-%d"),
                                         end_date=end_date.strftime("%Y-%m-%d"))
-                        print("SAVE LEAGUE")
                         league.save()
-                        print("SAVED")
-                        '''''
+
                         league = League.objects.filter(league_id=series['id'])[0]
 
                         url = "https://rapidapi.p.rapidapi.com/matchseries.php"
@@ -65,9 +57,8 @@ def fetch_data():
                                 .replace(tzinfo=get_current_timezone())
                             new_match = Match(league=league, team1=team1, team2=team2, time=start_time);
                             new_match.save()
-                        '''''
 
         return True
-    #except:
-     #   return False
+    except:
+        return False
 
