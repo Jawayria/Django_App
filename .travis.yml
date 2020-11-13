@@ -9,4 +9,4 @@ install:
   - pip install -r requirements.txt
 
 script:
-  - pytest Groups/tests.py
+  - pytest cricPredict/Groups/tests.py
